@@ -243,6 +243,9 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
 
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#111" }}>
+      <style>{`
+        .absolute-card { position: absolute; width: 100%; }
+      `}</style>
       {/* Role Switcher Navigation */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", padding: "10px", backgroundColor: "#f3f4f6", borderRadius: "8px" }}>
         <span style={{ fontWeight: "bold" }}>Role: {profile?.role?.toUpperCase()}</span>
@@ -373,7 +376,7 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
                   key={job.id}
                   onSwipe={(dir) => handleSwipe(dir, job.id, job)}
                   preventSwipe={["up", "down"]}
-                  style={{ position: "absolute", width: "100%" }}
+                  className="absolute-card"
                 >
                   <div
                     style={{
@@ -431,7 +434,7 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
                   key={candidate.id}
                   onSwipe={(dir) => handleSwipe(dir, candidate.id, candidate)}
                   preventSwipe={["up", "down"]}
-                  style={{ position: "absolute", width: "100%" }}
+                  className="absolute-card"
                 >
                   <div
                     style={{
