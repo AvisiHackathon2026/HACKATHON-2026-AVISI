@@ -2,11 +2,12 @@
 
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import SwipeFeature from "./SwipeFeature";
 
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe'>('home');
   
   // Auth Form State
   const [email, setEmail] = useState("");
@@ -211,8 +212,11 @@ export default function App() {
         <button onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🧮 Calculator
         </button>
-        <button onClick={() => setCurrentView('cv')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'cv' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'cv' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button onClick={() => setCurrentView('cv')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'cv' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'cv' ? 'bold' : 'normal', borderRadius: '4px' }}>
           📄 Upload CV
+        </button>
+        <button onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          🔥 Find Matches
         </button>
         
         <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px' }}>
@@ -234,6 +238,9 @@ export default function App() {
               </button>
               <button onClick={() => setCurrentView('cv')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
                 📄 Upload Candidate CV
+              </button>
+              <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
+                🔥 Find Matches
               </button>
             </div>
           </div>
@@ -344,6 +351,13 @@ export default function App() {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* VIEW: SWIPE (NEW) */}
+        {currentView === 'swipe' && (
+          <div style={{ width: '100%', height: '100%' }}>
+            <SwipeFeature userId={session.user.id} />
           </div>
         )}
       </main>
