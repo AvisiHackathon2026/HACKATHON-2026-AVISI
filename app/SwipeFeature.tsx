@@ -100,6 +100,7 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
     // Fetch unemployed candidates
     const { data: candidates } = await supabase
       .from("profiles")
+      .select("*")
       .eq("role", "unemployed");
 
     if (candidates) {
