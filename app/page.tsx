@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv'>('home');
   
   // Auth Form State
   const [email, setEmail] = useState("");
@@ -24,6 +24,12 @@ export default function App() {
   const [costFactor, setCostFactor] = useState<number>(2.0);
   const [hoursPerWeek, setHoursPerWeek] = useState<number>(40);
 
+  // --- CV UPLOAD STATE (NEW) ---
+  const [candidateName, setCandidateName] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+
   // --- INITIAL LOAD ---
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -36,13 +42,12 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       loadUserData(session?.user);
-      if (!session) setCurrentView('home'); // reset view on logout
+      if (!session) setCurrentView('home'); 
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Hydrate user data from Supabase storage
   const loadUserData = (user: any) => {
     if (user && user.user_metadata) {
       setFullName(user.user_metadata.full_name || "");
@@ -92,6 +97,73 @@ export default function App() {
     else alert("Account info saved successfully!");
   };
 
+  // --- CV UPLOAD LOGIC (NEW) ---
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+      setUploadStatus({ type: null, message: '' });
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      setUploadStatus({ type: 'error', message: 'Please select a file to upload.' });
+      return;
+    }
+    if (!candidateName) {
+      setUploadStatus({ type: 'error', message: 'Please enter a candidate name.' });
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadStatus({ type: null, message: '' });
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `cvs/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(filePath);
+
+      const { error: dbError } = await supabase
+        .from('candidate_cvs')
+        .insert([
+          {
+            recruiter_id: session?.user?.id, 
+            candidate_name: candidateName,
+            original_filename: file.name,
+            file_path: filePath,
+            public_url: urlData.publicUrl
+          }
+        ]);
+
+      if (dbError) throw dbError;
+
+      setUploadStatus({ type: 'success', message: 'CV uploaded successfully!' });
+      setFile(null); 
+      setCandidateName(""); 
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      setUploadStatus({ type: 'error', message: `Upload failed: ${error.message}` });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // --- CALCULATOR MATH LOGIC ---
+  const targetCostPrice = maxClientRate - desiredMargin;
+  const grossHourlyWage = targetCostPrice / costFactor;
+  const grossWeeklySalary = grossHourlyWage * hoursPerWeek;
+  const grossMonthlySalary = (grossWeeklySalary * 13) / 3;
+
   // --- THEME STYLES ---
   const theme = {
     bg: isDarkMode ? '#121212' : '#ffffff',
@@ -136,8 +208,11 @@ export default function App() {
         <button onClick={() => setCurrentView('home')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'home' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'home' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🏠 Dashboard
         </button>
-        <button onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🧮 Calculator
+        </button>
+        <button onClick={() => setCurrentView('cv')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'cv' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'cv' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          📄 Upload CV
         </button>
         
         <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px' }}>
@@ -157,8 +232,8 @@ export default function App() {
               <button onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
                 🧮 Open Calculator
               </button>
-              <button onClick={() => setCurrentView('account')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
-                ⚙️ Edit Account Details
+              <button onClick={() => setCurrentView('cv')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
+                📄 Upload Candidate CV
               </button>
             </div>
           </div>
@@ -169,24 +244,19 @@ export default function App() {
           <div style={{ maxWidth: '500px' }}>
             <h1>Edit Account</h1>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: theme.cardBg, padding: '2rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
-              
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 Full Name:
                 <input type="text" placeholder="John Doe" value={fullName} onChange={e => setFullName(e.target.value)} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
               </label>
-
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 Company Name:
                 <input type="text" placeholder="Acme Corp" value={company} onChange={e => setCompany(e.target.value)} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
               </label>
-
               <hr style={{ borderColor: theme.borderColor, margin: '10px 0' }} />
-
               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '1.1rem' }}>
                 <input type="checkbox" checked={isDarkMode} onChange={e => setIsDarkMode(e.target.checked)} style={{ transform: 'scale(1.5)', cursor: 'pointer' }} />
                 Enable Dark Mode
               </label>
-
               <button onClick={handleSaveAccount} disabled={isSaving} style={{ marginTop: '15px', padding: '12px', cursor: 'pointer', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
@@ -198,7 +268,6 @@ export default function App() {
         {currentView === 'calculator' && (
           <div style={{ maxWidth: '800px' }}>
             <h1>Recruiter Calculator</h1>
-            
             <section style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
               <h3 style={{ marginTop: 0 }}>Inputs (Budget ➔ Salary)</h3>
               <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
@@ -218,18 +287,63 @@ export default function App() {
                 <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px' }} />
               </label>
             </section>
-
             <section style={{ background: theme.sidebarBg, padding: '1.5rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
               <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
               <p><strong>1. Target Cost Price:</strong> €{maxClientRate} - €{desiredMargin} margin = €{(maxClientRate - desiredMargin).toFixed(2)} / hour</p>
               <p><strong>2. Gross Hourly Wage:</strong> €{(maxClientRate - desiredMargin).toFixed(2)} / {costFactor} factor = €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)}</p>
               <p><strong>3. Gross Weekly Salary:</strong> €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)} / factor × {hoursPerWeek} hours = €{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)}</p>
               <p><strong>4. Max Monthly Salary:</strong> (€{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)} × 13) / 3 = <strong>€{((((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek) * 13 / 3).toFixed(2)}</strong></p>
-              
-              <hr style={{ borderColor: theme.borderColor, margin: '1.5rem 0' }} />
-              <h2 style={{ color: '#2e7d32', margin: 0 }}>Indicative Max Monthly Salary: €{((((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek) * 13 / 3).toFixed(2)}</h2>
-              <p style={{ color: '#d32f2f', fontSize: '0.85rem', fontWeight: 'bold' }}>⚠️ Excludes travel costs until specific candidate details are known.</p>
             </section>
+          </div>
+        )}
+
+        {/* VIEW: CV UPLOAD (NEW) */}
+        {currentView === 'cv' && (
+          <div style={{ maxWidth: '500px' }}>
+            <h1>Upload Candidate CV</h1>
+            <div style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '2rem', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  Candidate Name:
+                  <input type="text" placeholder="Jane Doe" value={candidateName} onChange={e => setCandidateName(e.target.value)} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
+                </label>
+
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  CV File (.pdf, .doc):
+                  <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, borderRadius: '4px' }} />
+                </label>
+
+                <button
+                  onClick={handleUpload}
+                  disabled={!file || !candidateName || isUploading}
+                  style={{
+                    padding: '12px',
+                    background: isUploading || !file || !candidateName ? '#999' : '#1976d2',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: isUploading || !file || !candidateName ? 'not-allowed' : 'pointer',
+                    fontWeight: 'bold',
+                    marginTop: '10px'
+                  }}
+                >
+                  {isUploading ? 'Uploading to Database...' : 'Upload CV'}
+                </button>
+
+                {uploadStatus.message && (
+                  <div style={{
+                    padding: '10px',
+                    borderRadius: '4px',
+                    background: uploadStatus.type === 'success' ? '#e8f5e9' : '#ffebee',
+                    color: uploadStatus.type === 'success' ? '#2e7d32' : '#c62828',
+                    border: `1px solid ${uploadStatus.type === 'success' ? '#a5d6a7' : '#ef9a9a'}`
+                  }}>
+                    {uploadStatus.message}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>
