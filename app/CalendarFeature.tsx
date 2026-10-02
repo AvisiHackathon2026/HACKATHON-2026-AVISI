@@ -117,7 +117,7 @@ export default function CalendarFeature({ userId }: { userId: string }) {
 
   return (
     <div style={{ height: "70vh", backgroundColor: "rgba(255, 255, 255, 0.03)", color: "#111", padding: "20px", borderRadius: "8px", position: "relative" }}>
-      <h2 style={{ marginTop: 0, marginBottom: "20px" }}>Schedule Interviews (Click an empty slot to propose)</h2>
+      <h2 className="text-gradient" style={{ marginTop: 0, marginBottom: "20px" }}>Schedule Interviews (Click an empty slot to propose)</h2>
       <Calendar
         localizer={localizer}
         events={events}
