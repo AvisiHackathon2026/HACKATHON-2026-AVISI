@@ -128,7 +128,27 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       .select("*, companies(name)");
 
     if (jobs) {
-      const unswipedJobs = jobs.filter((j) => !swipedJobIds.includes(j.id));
+      let unswipedJobs = jobs.filter((j) => !swipedJobIds.includes(j.id));
+      
+      // ALGORITHM: Rank jobs based on expected salary match
+      const userExpected = Number(profile?.expected_salary) || 0;
+      
+      unswipedJobs = unswipedJobs.sort((a, b) => {
+        const rateA = Number(a.hourly_rate) || 0;
+        const rateB = Number(b.hourly_rate) || 0;
+        
+        // Give higher priority (negative sort value) to jobs that pay AT LEAST what the user wants
+        const aMeetsExpectation = rateA >= userExpected ? -1 : 1;
+        const bMeetsExpectation = rateB >= userExpected ? -1 : 1;
+
+        if (aMeetsExpectation !== bMeetsExpectation) {
+          return aMeetsExpectation - bMeetsExpectation;
+        }
+        
+        // If both meet or both fail, sort by highest paying first
+        return rateB - rateA;
+      });
+
       setJobCards(unswipedJobs);
     }
   };
@@ -147,7 +167,21 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       .eq("role", "unemployed");
 
     if (candidates) {
-      const unswiped = candidates.filter((c) => !swipedUserIds.includes(c.id));
+      let unswiped = candidates.filter((c) => !swipedUserIds.includes(c.id));
+      
+      // ALGORITHM: Rank candidates for recruiters
+      unswiped = unswiped.sort((a, b) => {
+        // Priority 1: Did they upload a CV? (We want serious candidates first)
+        const aHasCv = a.cv_url ? -1 : 1;
+        const bHasCv = b.cv_url ? -1 : 1;
+        if (aHasCv !== bHasCv) return aHasCv - bHasCv;
+
+        // Priority 2: Sort by Expected Salary (Ascending - cheaper candidates first)
+        const rateA = Number(a.expected_salary) || 999;
+        const rateB = Number(b.expected_salary) || 999;
+        return rateA - rateB;
+      });
+
       setCandidateCards(unswiped);
     }
   };
