@@ -225,7 +225,7 @@ export default function App() {
 
   // --- UI: LOGGED IN (APP LAYOUT) ---
   return (
-    <div className={isDarkMode ? "grid-background" : "grid-background light-mode"} style={{ display: "flex", minHeight: "100vh", fontFamily: "sans-serif", position: "relative", overflow: "hidden" }}>
+    <div className={isDarkMode ? "grid-background" : "grid-background light-mode"} style={{ display: "flex", minHeight: "100vh", fontFamily: "sans-serif", position: "relative", overflow: "hidden", color: "var(--text-color)" }}>
       
       {/* SIDEBAR */}
       <nav className="glass-card" style={{ position: 'relative', zIndex: 10, width: '250px', borderRight: `1px solid ${'var(--glass-border)'}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
@@ -361,8 +361,8 @@ export default function App() {
 
         {/* VIEW: CALCULATOR */}
         {currentView === 'calculator' && (
-          <div style={{ maxWidth: '800px' }}>
-            <h1>Recruiter Calculator</h1>
+          <div style={{ maxWidth: '800px', color: 'var(--text-color)' }}>
+            <h1>🧮 Recruiter Calculator</h1>
             
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <button 
