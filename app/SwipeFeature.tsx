@@ -7,14 +7,15 @@ import { supabase } from "@/lib/supabaseClient";
 interface SwipeFeatureProps {
   userId: string;
   userEmail: string;
+  defaultTab?: "swipe" | "edit_profile";
 }
 
-export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
+export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe" }: SwipeFeatureProps) {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Toggle for unemployed users to switch between profile editor and swiping
-  const [activeTab, setActiveTab] = useState<"swipe" | "edit_profile">("swipe");
+  const [activeTab, setActiveTab] = useState<"swipe" | "edit_profile">(defaultTab);
 
   // Candidate Profile Form State
   const [username, setUsername] = useState("");

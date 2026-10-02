@@ -11,7 +11,7 @@ import CompanyDashboardFeature from "./CompanyDashboardFeature";
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe' | 'chat' | 'calendar' | 'companies' | 'company_dashboard'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'my_profile' | 'swipe' | 'chat' | 'calendar' | 'companies' | 'company_dashboard'>('home');
   const [negotiationMatchId, setNegotiationMatchId] = useState<string | null>(null);
 
   
@@ -147,7 +147,7 @@ export default function App() {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `cvs/${fileName}`;
+      const filePath = `my_profiles/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('documents')
@@ -160,7 +160,7 @@ export default function App() {
         .getPublicUrl(filePath);
 
       const { error: dbError } = await supabase
-        .from('candidate_cvs')
+        .from('candidate_my_profiles')
         .insert([
           {
             recruiter_id: session?.user?.id, 
@@ -247,10 +247,10 @@ export default function App() {
           </button>
         )}
 
-        {/* UNEMPLOYED ONLY: Upload CV (Will be merged into My Profile later, keeping for compatibility now) */}
+        {/* UNEMPLOYED ONLY: My Profile (Will be merged into My Profile later, keeping for compatibility now) */}
         {userRole === 'unemployed' && (
-          <button onClick={() => setCurrentView('cv')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'cv' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'cv' ? 'bold' : 'normal', borderRadius: '4px' }}>
-            📄 Upload CV
+          <button onClick={() => setCurrentView('my_profile')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'my_profile' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'my_profile' ? 'bold' : 'normal', borderRadius: '4px' }}>
+            📄 My Profile
           </button>
         )}
 
@@ -297,8 +297,8 @@ export default function App() {
               {/* UNEMPLOYED ONLY */}
               {userRole === 'unemployed' && (
                 <>
-                  <button onClick={() => setCurrentView('cv')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
-                    📄 Upload CV
+                  <button onClick={() => setCurrentView('my_profile')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                    📄 My Profile
                   </button>
                   <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
                     🔥 Find Matches
@@ -480,60 +480,19 @@ export default function App() {
           </div>
         )}
 
-        {/* VIEW: CV UPLOAD (NEW) */}
-        {currentView === 'cv' && (
-          <div style={{ maxWidth: '500px' }}>
-            <h1>Upload Candidate CV</h1>
-            <div style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '2rem', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  Candidate Name:
-                  <input type="text" placeholder="Jane Doe" value={candidateName} onChange={e => setCandidateName(e.target.value)} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
-                </label>
 
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  CV File (.pdf, .doc):
-                  <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, borderRadius: '4px' }} />
-                </label>
 
-                <button
-                  onClick={handleUpload}
-                  disabled={!file || !candidateName || isUploading}
-                  style={{
-                    padding: '12px',
-                    background: isUploading || !file || !candidateName ? '#999' : '#1976d2',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: isUploading || !file || !candidateName ? 'not-allowed' : 'pointer',
-                    fontWeight: 'bold',
-                    marginTop: '10px'
-                  }}
-                >
-                  {isUploading ? 'Uploading to Database...' : 'Upload CV'}
-                </button>
-
-                {uploadStatus.message && (
-                  <div style={{
-                    padding: '10px',
-                    borderRadius: '4px',
-                    background: uploadStatus.type === 'success' ? '#e8f5e9' : '#ffebee',
-                    color: uploadStatus.type === 'success' ? '#2e7d32' : '#c62828',
-                    border: `1px solid ${uploadStatus.type === 'success' ? '#a5d6a7' : '#ef9a9a'}`
-                  }}>
-                    {uploadStatus.message}
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* VIEW: MY PROFILE */}
+        {currentView === 'my_profile' && (
+          <div style={{ width: '100%', height: '100%' }}>
+            <SwipeFeature key="profile" userId={session.user.id} userEmail={session.user.email || ""} defaultTab="edit_profile" />
           </div>
         )}
 
         {/* VIEW: SWIPE (NEW) */}
         {currentView === 'swipe' && (
           <div style={{ width: '100%', height: '100%' }}>
-            <SwipeFeature userId={session.user.id} userEmail={session.user.email || ""} />
+            <SwipeFeature key="swipe" userId={session.user.id} userEmail={session.user.email || ""} defaultTab="swipe" />
           </div>
         )}
 
