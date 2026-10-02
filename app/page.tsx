@@ -192,107 +192,106 @@ export default function App() {
 
   // --- THEME STYLES ---
   const theme = {
-    bg: isDarkMode ? '#121212' : '#ffffff',
-    text: isDarkMode ? '#e0e0e0' : '#111111',
-    sidebarBg: isDarkMode ? '#1e1e1e' : '#f4f4f4',
-    cardBg: isDarkMode ? '#2d2d2d' : '#f9f9f9',
-    borderColor: isDarkMode ? '#444' : '#ccc',
-    inputBg: isDarkMode ? '#333' : '#fff',
-    inputText: isDarkMode ? '#fff' : '#000',
+    bg: '#000a1f',
+    text: '#ffffff',
+    sidebarBg: 'transparent',
+    cardBg: 'rgba(255, 255, 255, 0.03)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    inputBg: 'rgba(0, 0, 0, 0.2)',
+    inputText: '#ffffff',
   };
 
   // --- UI: NOT LOGGED IN ---
   if (!session) {
     return (
-      <main style={{ padding: '2rem', fontFamily: 'sans-serif', background: theme.bg, color: theme.text, minHeight: '100vh' }}>
-        <h1>Welcome to the Recruiter Platform</h1>
-        <p>Please log in or register to access the platform.</p>
+      <main className="grid-background" style={{ position: 'relative', overflow: 'hidden', padding: '2rem', fontFamily: 'sans-serif', color: theme.text, minHeight: '100vh' }}>
+        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "40%", height: "40%", background: "rgba(37, 99, 235, 0.2)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
+        <div style={{ position: "absolute", bottom: "-10%", right: "-10%", width: "40%", height: "40%", background: "rgba(30, 58, 138, 0.2)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
         
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px', gap: '10px', marginTop: '1rem' }}>
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ padding: '8px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: '8px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button type="submit" style={{ padding: '10px', flex: 1, cursor: 'pointer', background: theme.sidebarBg, color: theme.text, border: `1px solid ${theme.borderColor}` }}>Log In</button>
-            <button type="button" onClick={handleSignUp} style={{ padding: '10px', flex: 1, cursor: 'pointer', background: theme.sidebarBg, color: theme.text, border: `1px solid ${theme.borderColor}` }}>Register</button>
-          </div>
-        </form>
+        <div style={{ position: 'relative', zIndex: 10 }}>
+          <h1 className="text-gradient" style={{ fontSize: '3rem', fontWeight: '800' }}>Vanguard Engine</h1>
+          <p>Please log in or register to access the platform.</p>
+          
+          <form className="glass-card" onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px', gap: '15px', marginTop: '1rem', padding: '20px' }}>
+            <input className="glass-input" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required style={{ padding: '10px', borderRadius: '8px' }} />
+            <input className="glass-input" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: '10px', borderRadius: '8px' }} />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button className="primary-button" type="submit" style={{ padding: '10px', flex: 1, cursor: 'pointer', borderRadius: '8px', fontWeight: 'bold' }}>Log In</button>
+              <button className="glass-button" type="button" onClick={handleSignUp} style={{ padding: '10px', flex: 1, cursor: 'pointer', borderRadius: '8px', fontWeight: 'bold' }}>Register</button>
+            </div>
+          </form>
+        </div>
       </main>
     );
   }
 
   // --- UI: LOGGED IN (APP LAYOUT) ---
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', background: theme.bg, color: theme.text }}>
+    <div className="grid-background" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', color: theme.text, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "40%", height: "40%", background: "rgba(37, 99, 235, 0.1)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
+      <div style={{ position: "absolute", bottom: "-10%", right: "-10%", width: "40%", height: "40%", background: "rgba(30, 58, 138, 0.1)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
       
       {/* SIDEBAR */}
-      <nav style={{ width: '250px', background: theme.sidebarBg, borderRight: `1px solid ${theme.borderColor}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-        <h2 style={{ marginTop: 0, marginBottom: '2rem' }}>Recruiter App</h2>
+      <nav className="glass-card" style={{ position: 'relative', zIndex: 10, width: '250px', borderRight: `1px solid ${theme.borderColor}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+        <h2 className="text-gradient" style={{ marginTop: 0, marginBottom: '2rem', fontSize: '1.5rem', fontWeight: '800' }}>Vanguard</h2>
         
 
 
         {/* SHARED: Dashboard */}
-        <button onClick={() => setCurrentView('home')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'home' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'home' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('home')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'home' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'home' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🏠 Dashboard
         </button>
 
         {/* ADMIN & RECRUITER ONLY: Calculator */}
         {(userRole === 'admin' || userRole === 'recruiter') && (
-          <button onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
             🧮 Calculator
           </button>
         )}
 
         {/* UNEMPLOYED ONLY: My Profile (Will be merged into My Profile later, keeping for compatibility now) */}
         {userRole === 'unemployed' && (
-          <button onClick={() => setCurrentView('my_profile')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'my_profile' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'my_profile' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          <button className="glass-card glass-button" onClick={() => setCurrentView('my_profile')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'my_profile' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'my_profile' ? 'bold' : 'normal', borderRadius: '4px' }}>
             📄 My Profile
           </button>
         )}
 
         {/* ADMIN: Admin Panel / EVERYONE ELSE: Find Matches */}
-        <button onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
           {userRole === 'admin' ? '⚙️ Admin Panel' : '🔥 Find Matches'}
         </button>
 
         {/* SHARED: Chat & Calendar */}
-        <button onClick={() => setCurrentView('chat')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'chat' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'chat' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('chat')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'chat' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'chat' ? 'bold' : 'normal', borderRadius: '4px' }}>
           💬 Chat
         </button>
-        <button onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
           📅 Calendar
         </button>
 
         {/* SHARED: Companies */}
-        <button onClick={() => setCurrentView('companies')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'companies' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'companies' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('companies')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'companies' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'companies' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🏢 Companies
         </button>
         
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.9rem', marginBottom: '20px', color: theme.text }}>
-          <input type="checkbox" checked={isDarkMode} onChange={e => {
-            setIsDarkMode(e.target.checked);
-            supabase.auth.updateUser({ data: { dark_mode: e.target.checked } });
-          }} style={{ cursor: 'pointer' }} />
-          Dark Mode
-        </label>
-
-        <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px' }}>
+        <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
           Sign Out
         </button>
       </nav>
 
       {/* MAIN CONTENT AREA */}
-      <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
+      <main style={{ position: 'relative', zIndex: 10, flex: 1, padding: '2rem', overflowY: 'auto' }}>
         
         {/* VIEW: HOME / DASHBOARD */}
         {currentView === 'home' && (
           <div>
-            <h1>Welcome back, {fullName || session.user.email}!</h1>
-            <p>What would you like to do today?</p>
+            <h1 className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: '800' }}>Welcome back, {fullName || session.user.email}!</h1>
+            <p style={{ color: '#9ca3af' }}>What would you like to do today?</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginTop: '2rem' }}>
               
               {/* ADMIN & RECRUITER ONLY */}
               {(userRole === 'admin' || userRole === 'recruiter') && (
-                <button onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                   🧮 Calculator
                 </button>
               )}
@@ -300,30 +299,30 @@ export default function App() {
               {/* UNEMPLOYED ONLY */}
               {userRole === 'unemployed' && (
                 <>
-                  <button onClick={() => setCurrentView('my_profile')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  <button className="glass-card glass-button" onClick={() => setCurrentView('my_profile')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                     📄 My Profile
                   </button>
-                  <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                     🔥 Find Matches
                   </button>
                 </>
               )}
 
               {/* SHARED */}
-              <button onClick={() => setCurrentView('chat')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+              <button className="glass-card glass-button" onClick={() => setCurrentView('chat')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                 💬 Chat
               </button>
-              <button onClick={() => setCurrentView('calendar')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+              <button className="glass-card glass-button" onClick={() => setCurrentView('calendar')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                 📅 Calendar
               </button>
               
               {/* RECRUITER ONLY */}
               {userRole === 'recruiter' && (
                 <>
-                  <button onClick={() => setCurrentView('company_dashboard')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  <button className="glass-card glass-button" onClick={() => setCurrentView('company_dashboard')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                     🏢 Company Dashboard
                   </button>
-                  <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                     🔥 Swipe Deck
                   </button>
                 </>
@@ -331,7 +330,7 @@ export default function App() {
 
               {/* ADMIN ONLY */}
               {userRole === 'admin' && (
-                <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
                   ⚙️ Admin Panel
                 </button>
               )}

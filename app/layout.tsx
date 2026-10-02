@@ -1,3 +1,5 @@
+import './globals.css';
+
 export const metadata = {
   title: 'AVISI Hackathon App',
   description: 'Hackathon project using Vercel, Supabase, and Nodemailer',

@@ -141,10 +141,10 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
   const canHire = isSalaryAccepted && isMeetingAccepted && myRole === "recruiter" && !isLocked;
 
   return (
-    <div style={{ display: "flex", height: "70vh", border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden", backgroundColor: "#fff", color: "#111" }}>
+    <div style={{ display: "flex", height: "70vh", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "8px", overflow: "hidden", backgroundColor: "#ffffff", color: "#ffffff" }}>
       
       {/* MATCHES SIDEBAR */}
-      <div style={{ width: "300px", borderRight: "1px solid #ccc", backgroundColor: "#f9f9f9", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "300px", borderRight: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.03)", display: "flex", flexDirection: "column" }}>
         <h3 style={{ padding: "15px", margin: 0, borderBottom: "1px solid #eee", backgroundColor: "#f1f1f1" }}>Your Matches</h3>
         <div style={{ overflowY: "auto", flex: 1 }}>
           {matches.length === 0 ? (
@@ -176,7 +176,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
         ) : (
           <>
             {/* CHAT HEADER */}
-            <div style={{ padding: "15px", borderBottom: "1px solid #ccc", backgroundColor: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ padding: "15px", borderBottom: "1px solid #ccc", backgroundColor: "#ffffff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontWeight: "bold" }}>Chatting with {selectedMatch.otherUser.full_name}</div>
               
               <div style={{ display: "flex", gap: "10px" }}>
@@ -184,14 +184,14 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                   <>
                     <button 
                       onClick={() => sendRawMessage("[MEETING_PROPOSED]")}
-                      style={{ padding: "6px 12px", backgroundColor: "#f59e0b", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "12px" }}
+                      style={{ padding: "6px 12px", backgroundColor: "#f59e0b", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "12px" }}
                     >
                       📅 Propose Meeting
                     </button>
                     {onGoToCalculator && (
                       <button 
                         onClick={() => onGoToCalculator(selectedMatch.id)}
-                        style={{ padding: "6px 12px", backgroundColor: "#3b82f6", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "12px" }}
+                        style={{ padding: "6px 12px", backgroundColor: "#3b82f6", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "12px" }}
                       >
                         🧮 Propose Salary (Calc)
                       </button>
@@ -202,7 +202,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                 {canHire && (
                   <button 
                     onClick={handleHireCandidate}
-                    style={{ padding: "6px 16px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "14px", boxShadow: "0 0 10px rgba(16, 185, 129, 0.5)", animation: "pulse 2s infinite" }}
+                    style={{ padding: "6px 16px", backgroundColor: "#10b981", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "14px", boxShadow: "0 0 10px rgba(16, 185, 129, 0.5)", animation: "pulse 2s infinite" }}
                   >
                     🎉 HIRE CANDIDATE
                   </button>
@@ -211,7 +211,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
             </div>
 
             {isLocked && (
-              <div style={{ backgroundColor: isHiredByMe ? "#10b981" : "#ef4444", color: "#fff", padding: "10px", textAlign: "center", fontWeight: "bold" }}>
+              <div style={{ backgroundColor: isHiredByMe ? "#10b981" : "#ef4444", color: "#ffffff", padding: "10px", textAlign: "center", fontWeight: "bold" }}>
                 {isHiredByMe ? "✅ You have officially hired this candidate!" : "🔒 This candidate has been hired by another company and is off the market."}
               </div>
             )}
@@ -234,7 +234,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                           🧮 Salary Proposal: €{amount} / hr
                         </div>
                         {myRole === "unemployed" && !isSalaryAccepted && !isLocked && (
-                          <button onClick={() => sendRawMessage(`[SALARY_ACCEPTED: ${amount}]`)} style={{ padding: "8px 16px", backgroundColor: "#3b82f6", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
+                          <button onClick={() => sendRawMessage(`[SALARY_ACCEPTED: ${amount}]`)} style={{ padding: "8px 16px", backgroundColor: "#3b82f6", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
                             Accept Offer
                           </button>
                         )}
@@ -254,12 +254,12 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
 
                   if (content === "[MEETING_PROPOSED]") {
                     return (
-                      <div key={msg.id} style={{ margin: "15px 0", padding: "15px", border: "2px solid #f59e0b", borderRadius: "8px", backgroundColor: "#fffbeb", textAlign: "center" }}>
+                      <div key={msg.id} style={{ margin: "15px 0", padding: "15px", border: "2px solid #f59e0b", borderRadius: "8px", backgroundColor: "rgba(255, 255, 255, 0.03)beb", textAlign: "center" }}>
                         <div style={{ fontSize: "16px", fontWeight: "bold", color: "#92400e", marginBottom: "10px" }}>
                           📅 A Meeting was proposed.
                         </div>
                         {myRole === "unemployed" && !isMeetingAccepted && !isLocked && (
-                          <button onClick={() => sendRawMessage(`[MEETING_ACCEPTED]`)} style={{ padding: "8px 16px", backgroundColor: "#f59e0b", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
+                          <button onClick={() => sendRawMessage(`[MEETING_ACCEPTED]`)} style={{ padding: "8px 16px", backgroundColor: "#f59e0b", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
                             Accept Meeting
                           </button>
                         )}
@@ -287,7 +287,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                   if (content.startsWith("[SYSTEM_MATCH:")) {
                     const jobTitle = content.split(":")[1].replace("]", "").trim();
                     return (
-                      <div key={msg.id} style={{ margin: "20px 0", textAlign: "center", fontSize: "14px", color: "#6b7280", fontWeight: "bold", padding: "10px", backgroundColor: "#f3f4f6", borderRadius: "8px" }}>
+                      <div key={msg.id} style={{ margin: "20px 0", textAlign: "center", fontSize: "14px", color: "#6b7280", fontWeight: "bold", padding: "10px", backgroundColor: "rgba(0, 0, 0, 0.2)", borderRadius: "8px" }}>
                         ✨ New Application Match: You both matched for the <span style={{ color: "#3b82f6" }}>{jobTitle}</span> role!
                       </div>
                     );
@@ -298,7 +298,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                     <div key={msg.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "10px" }}>
                       <div style={{ 
                         maxWidth: "70%", padding: "10px 15px", borderRadius: "15px", 
-                        backgroundColor: isMine ? "#1976d2" : "#e0e0e0", color: isMine ? "#fff" : "#111"
+                        backgroundColor: isMine ? "#1976d2" : "rgba(255, 255, 255, 0.1)", color: isMine ? "rgba(255, 255, 255, 0.03)" : "#111"
                       }}>
                         {msg.content}
                       </div>
@@ -310,14 +310,14 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
             </div>
 
             {/* MESSAGE INPUT */}
-            <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", borderTop: "1px solid #ccc", backgroundColor: "#fff" }}>
+            <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", borderTop: "1px solid #ccc", backgroundColor: "#ffffff" }}>
               <input 
                 type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)}
                 placeholder={isLocked ? "Chat locked (Candidate Off-The-Market)" : "Type a message..."}
                 disabled={isLocked}
-                style={{ flex: 1, padding: "10px", borderRadius: "20px", border: "1px solid #ccc", marginRight: "10px", backgroundColor: isLocked ? "#f3f4f6" : "#fff" }}
+                style={{ flex: 1, padding: "10px", borderRadius: "20px", border: "1px solid rgba(255, 255, 255, 0.1)", marginRight: "10px", backgroundColor: isLocked ? "#f3f4f6" : "rgba(255, 255, 255, 0.03)" }}
               />
-              <button type="submit" disabled={isLocked} style={{ padding: "10px 20px", backgroundColor: isLocked ? "#ccc" : "#1976d2", color: "#fff", border: "none", borderRadius: "20px", cursor: isLocked ? "not-allowed" : "pointer", fontWeight: "bold" }}>
+              <button type="submit" disabled={isLocked} style={{ padding: "10px 20px", backgroundColor: isLocked ? "#ccc" : "#1976d2", color: "#ffffff", border: "none", borderRadius: "20px", cursor: isLocked ? "not-allowed" : "pointer", fontWeight: "bold" }}>
                 Send
               </button>
             </form>
