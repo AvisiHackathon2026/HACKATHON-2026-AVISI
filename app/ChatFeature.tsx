@@ -284,6 +284,15 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                     );
                   }
 
+                  if (content.startsWith("[SYSTEM_MATCH:")) {
+                    const jobTitle = content.split(":")[1].replace("]", "").trim();
+                    return (
+                      <div key={msg.id} style={{ margin: "20px 0", textAlign: "center", fontSize: "14px", color: "#6b7280", fontWeight: "bold", padding: "10px", backgroundColor: "#f3f4f6", borderRadius: "8px" }}>
+                        ✨ New Application Match: You both matched for the <span style={{ color: "#3b82f6" }}>{jobTitle}</span> role!
+                      </div>
+                    );
+                  }
+
                   // Render Normal Messages
                   return (
                     <div key={msg.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "10px" }}>

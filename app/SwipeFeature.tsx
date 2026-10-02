@@ -402,6 +402,29 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
     fetchProfileAndData(); // Refresh list
   };
 
+  const createOrUpdateMatch = async (unemployedId: string, recruiterId: string, jobId: string, jobTitle: string) => {
+    const { data: existing } = await supabase
+      .from("matches")
+      .select("id")
+      .eq("unemployed_id", unemployedId)
+      .eq("recruiter_id", recruiterId)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      await supabase.from("messages").insert({
+        match_id: existing[0].id,
+        sender_id: unemployedId, 
+        content: `[SYSTEM_MATCH: ${jobTitle}]`
+      });
+    } else {
+      await supabase.from("matches").insert({
+        unemployed_id: unemployedId,
+        recruiter_id: recruiterId,
+        job_id: jobId,
+      });
+    }
+  };
+
   // Swipe logic (Optimistic / Non-blocking)
   const handleSwipe = (
     direction: string,
@@ -438,11 +461,12 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                 .eq("company_id", cardData.company_id)
                 .then(({ data: matchingRecruiters }) => {
                   if (matchingRecruiters && matchingRecruiters.length > 0) {
-                    supabase.from("matches").insert({
-                      unemployed_id: userId,
-                      recruiter_id: matchingRecruiters[0].id,
-                      job_id: cardData.id,
-                    }).then(() => setMatchedItem(cardData));
+                    createOrUpdateMatch(
+                      userId,
+                      matchingRecruiters[0].id,
+                      cardData.id,
+                      cardData.title
+                    ).then(() => setMatchedItem(cardData));
                   }
                 });
             }
@@ -459,11 +483,12 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
           .eq("target_id", selectedJobContext.id)
           .then(({ data: candidateSwipes }) => {
             if (candidateSwipes && candidateSwipes.length > 0) {
-              supabase.from("matches").insert({
-                unemployed_id: targetId,
-                recruiter_id: userId,
-                job_id: selectedJobContext.id,
-              }).then(() => setMatchedItem(cardData));
+              createOrUpdateMatch(
+                targetId,
+                userId,
+                selectedJobContext.id,
+                selectedJobContext.title
+              ).then(() => setMatchedItem(cardData));
             }
           });
       }
