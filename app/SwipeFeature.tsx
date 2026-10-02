@@ -39,9 +39,10 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   const [jobTitle, setJobTitle] = useState("");
   const [jobDesc, setJobDesc] = useState("");
   const [jobRate, setJobRate] = useState("");
-
-  // Recruiter Company Selection
-  const [recruiterCompanyId, setRecruiterCompanyId] = useState("");
+  
+  // Admin User Management State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allUsers, setAllUsers] = useState<any[]>([]);
 
   // Match Modal
   const [matchedItem, setMatchedItem] = useState<any>(null);
@@ -89,14 +90,19 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       setCvUrl(userProfile.cv_url || "");
     }
 
-    // Fetch companies list
+    // Fetch companies list (used by both Admin and Recruiter systems)
     const { data: companyList } = await supabase.from("companies").select("*");
     if (companyList) setCompanies(companyList);
 
+    // Load data based on role
     if (assignedRole === "unemployed") {
       await loadJobsForUnemployed(userProfile.id);
     } else if (assignedRole === "recruiter") {
       await loadCandidatesForRecruiter(userProfile.id);
+    } else if (assignedRole === "admin") {
+      // Admin superpower: Fetch all unemployed users to manage them
+      const { data: usersList } = await supabase.from("profiles").select("*").eq("role", "unemployed");
+      if (usersList) setAllUsers(usersList);
     }
 
     setLoading(false);
@@ -139,17 +145,14 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     }
   };
 
-  // Role Switcher Handler (Blocked if user is admin email)
-  const handleRoleChange = async (newRole: string) => {
-    if (isAdminEmail) return;
+  // Admin Action: Promote User to Recruiter
+  const handlePromoteToRecruiter = async (userIdToPromote: string, companyId: string) => {
+    const confirm = window.confirm("Are you sure you want to promote this user to a Recruiter?");
+    if (!confirm) return;
 
-    const updates: any = { role: newRole };
-    if (newRole === "recruiter" && recruiterCompanyId) {
-      updates.company_id = recruiterCompanyId;
-    }
-
-    await supabase.from("profiles").update(updates).eq("id", userId);
-    fetchProfileAndData();
+    await supabase.from("profiles").update({ role: "recruiter", company_id: companyId }).eq("id", userIdToPromote);
+    alert("User successfully promoted to Recruiter!");
+    fetchProfileAndData(); // Refresh the list
   };
 
   // File Upload Handler for Profile Picture & CV
@@ -334,58 +337,13 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
         .absolute-card { position: absolute; width: 100%; }
       `}</style>
       
-      {/* Role Navigation */}
+      {/* Role Display Header (Self-Serve switching removed for security) */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", padding: "12px", backgroundColor: "#f3f4f6", borderRadius: "8px" }}>
         <span style={{ fontWeight: "bold" }}>
-          Role: {profile?.role?.toUpperCase()}
+          Current Role: {profile?.role?.toUpperCase()}
           {isAdminEmail && " (Permanent Admin)"}
         </span>
-        <div style={{ display: "flex", gap: "8px" }}>
-          {!isAdminEmail && (
-            <>
-              <button
-                onClick={() => handleRoleChange("unemployed")}
-                style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", backgroundColor: profile?.role === "unemployed" ? "#3b82f6" : "#e5e7eb", color: profile?.role === "unemployed" ? "#fff" : "#000" }}
-              >
-                Unemployed
-              </button>
-              <button
-                onClick={() => handleRoleChange("recruiter")}
-                style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", backgroundColor: profile?.role === "recruiter" ? "#3b82f6" : "#e5e7eb", color: profile?.role === "recruiter" ? "#fff" : "#000" }}
-              >
-                Recruiter
-              </button>
-            </>
-          )}
-          {isAdminEmail && (
-            <span style={{ backgroundColor: "#10b981", color: "#fff", padding: "4px 8px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold" }}>
-              Admin Locked
-            </span>
-          )}
-        </div>
       </div>
-
-      {/* Recruiter Company Selection */}
-      {profile?.role === "recruiter" && (
-        <div style={{ marginBottom: "20px", padding: "12px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold" }}>Assign Recruiter to Company:</label>
-          <select
-            value={profile.company_id || recruiterCompanyId}
-            onChange={(e) => {
-              setRecruiterCompanyId(e.target.value);
-              handleRoleChange("recruiter");
-            }}
-            style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", color: "#111", backgroundColor: "#fff" }}
-          >
-            <option value="">-- Choose Company --</option>
-            {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {/* UNEMPLOYED VIEW: Toggle between Profile Editor & Swipe Cards */}
       {profile?.role === "unemployed" && (
@@ -653,6 +611,50 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       {/* ADMIN PANEL VIEW */}
       {profile?.role === "admin" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          
+          {/* Admin: Manage Users (Promote to Recruiter) */}
+          <div style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff", color: "#111" }}>
+            <h3 style={{ marginTop: 0 }}>Admin: User Management</h3>
+            <input 
+              type="text" 
+              placeholder="Search unemployed users by name or city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "15px", boxSizing: "border-box", border: "1px solid #ccc", borderRadius: "4px" }}
+            />
+            
+            <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #eee", borderRadius: "4px" }}>
+              {allUsers.length === 0 && <div style={{ padding: "10px" }}>No unemployed users found.</div>}
+              {allUsers
+                .filter(u => 
+                  (u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                   u.home_city?.toLowerCase().includes(searchQuery.toLowerCase()))
+                )
+                .map(user => (
+                  <div key={user.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px", borderBottom: "1px solid #eee" }}>
+                    <div>
+                      <strong>{user.full_name || "Anonymous User"}</strong>
+                      <div style={{ fontSize: "12px", color: "#666" }}>{user.home_city || "No city specified"}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <select 
+                        onChange={(e) => {
+                          if (e.target.value) handlePromoteToRecruiter(user.id, e.target.value);
+                          e.target.value = ""; // Reset dropdown after action
+                        }}
+                        style={{ padding: "6px", border: "1px solid #ccc", borderRadius: "4px", backgroundColor: "#10b981", color: "#fff", fontWeight: "bold", cursor: "pointer" }}
+                      >
+                        <option value="">Promote to Recruiter ▾</option>
+                        {companies.map(c => (
+                          <option key={c.id} value={c.id}>Assign to {c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </div>
+
           <form onSubmit={handleCreateCompany} style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff" }}>
             <h3 style={{ marginTop: 0 }}>Admin: Add Company</h3>
             <input
