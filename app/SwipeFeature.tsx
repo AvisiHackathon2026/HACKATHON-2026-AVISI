@@ -17,6 +17,7 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   const [activeTab, setActiveTab] = useState<"swipe" | "edit_profile">("swipe");
 
   // Candidate Profile Form State
+  const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [homeCity, setHomeCity] = useState("");
   const [expectedSalary, setExpectedSalary] = useState("");
@@ -43,6 +44,11 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   // Admin User Management State
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<any[]>([]);
+  
+  // Admin Edit Override State
+  const [adminEditUser, setAdminEditUser] = useState<any>(null);
+  const [adminEditUsername, setAdminEditUsername] = useState("");
+  const [adminEditFullName, setAdminEditFullName] = useState("");
 
   // Match Modal
   const [matchedItem, setMatchedItem] = useState<any>(null);
@@ -82,6 +88,7 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
 
     // Populate profile form fields
     if (userProfile) {
+      setUsername(userProfile.username || "");
       setFullName(userProfile.full_name || "");
       setHomeCity(userProfile.home_city || "");
       setExpectedSalary(userProfile.expected_salary || "");
@@ -165,6 +172,29 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     fetchProfileAndData(); // Refresh the list
   };
 
+  // Admin Action: Override Username / Full Name
+  const handleAdminSaveOverride = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminEditUser) return;
+
+    const { error } = await supabase.from("profiles").update({
+      username: adminEditUsername,
+      full_name: adminEditFullName
+    }).eq("id", adminEditUser.id);
+
+    if (error) {
+      if (error.message.includes("unique")) {
+        alert("Error: That username is already taken by someone else.");
+      } else {
+        alert(`Error: ${error.message}`);
+      }
+    } else {
+      alert("User details force-updated successfully!");
+      setAdminEditUser(null);
+      fetchProfileAndData();
+    }
+  };
+
   // File Upload Handler for Profile Picture & CV
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -198,11 +228,42 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     if (type === "cv") setUploadingCv(false);
   };
 
-  // Unemployed Profile Save Handler
+  // Mandatory Onboarding Complete Handler
+  const handleCompleteOnboarding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !fullName.trim()) return;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        username: username,
+        full_name: fullName,
+        home_city: homeCity,
+        expected_salary: expectedSalary,
+        motivation: motivation,
+        profile_picture_url: profilePicUrl,
+        cv_url: cvUrl,
+      })
+      .eq("id", userId);
+
+    if (error) {
+      if (error.message.includes("unique")) {
+        alert("This username is already taken! Please choose another.");
+      } else {
+        alert(`Failed to save: ${error.message}`);
+      }
+    } else {
+      alert("Welcome to the platform!");
+      fetchProfileAndData();
+    }
+  };
+
+  // Unemployed Profile Save Handler (Existing Users)
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaveStatus("Saving...");
 
+    // NOTE: username is purposely excluded here because they can't change it anymore.
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -341,6 +402,86 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     );
   }
 
+  // ==========================================
+  // VIEW: MANDATORY ONBOARDING QUESTIONNAIRE
+  // ==========================================
+  const isNewUser = profile?.role !== "admin" && !profile?.username;
+  
+  if (isNewUser) {
+    return (
+      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#111" }}>
+        <form onSubmit={handleCompleteOnboarding} style={{ backgroundColor: "#fff", padding: "30px", borderRadius: "12px", border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
+          <h1 style={{ margin: 0, color: "#111827", fontSize: "24px" }}>Welcome to the Platform! 👋</h1>
+          <p style={{ margin: 0, color: "#4b5563" }}>Before you can start swiping, please set up your account. Your username will be permanently locked after saving.</p>
+
+          <div>
+            <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Choose a Username *</label>
+            <input
+              type="text"
+              placeholder="e.g. dev_ninja"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", fontSize: "16px" }}
+              required
+            />
+            <span style={{ fontSize: "12px", color: "#ef4444", fontWeight: "bold" }}>Warning: This cannot be changed later.</span>
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Full Display Name *</label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", fontSize: "16px" }}
+              required
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Home City</label>
+            <input
+              type="text"
+              placeholder="Amsterdam"
+              value={homeCity}
+              onChange={(e) => setHomeCity(e.target.value)}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Expected Salary / Hour</label>
+            <input
+              type="text"
+              placeholder="€25 / hr"
+              value={expectedSalary}
+              onChange={(e) => setExpectedSalary(e.target.value)}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Profile Picture</label>
+            {profilePicUrl && <img src={profilePicUrl} alt="Preview" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", marginBottom: "8px" }} />}
+            <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "picture")} disabled={uploadingPic} />
+            {uploadingPic && <span style={{ fontSize: "12px", color: "#6b7280" }}> Uploading...</span>}
+          </div>
+
+          <button
+            type="submit"
+            style={{ padding: "14px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", fontSize: "16px", marginTop: "10px" }}
+          >
+            Complete Registration & Start Swiping 👉
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // VIEW: MAIN PLATFORM
+  // ==========================================
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#111" }}>
       <style>{`
@@ -377,6 +518,19 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
             <form onSubmit={handleSaveProfile} style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "12px", border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "16px" }}>
               <h2 style={{ margin: 0 }}>Applicant Profile Setup</h2>
 
+              {/* LOCKED USERNAME */}
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  disabled
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#6b7280", backgroundColor: "#f3f4f6", cursor: "not-allowed" }}
+                />
+                <span style={{ fontSize: "12px", color: "#6b7280" }}>Usernames cannot be changed.</span>
+              </div>
+
+              {/* EDITABLE FULL NAME */}
               <div>
                 <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Full Name</label>
                 <input
@@ -571,7 +725,7 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
                             {candidate.full_name || "Unnamed Applicant"}
                           </h2>
                           <p style={{ margin: "2px 0 0 0", color: "#6b7280", fontSize: "14px" }}>
-                            📍 {candidate.home_city || "Location unspecified"}
+                            @{candidate.username || "unknown"} • 📍 {candidate.home_city || "Location unspecified"}
                           </p>
                         </div>
                       </div>
@@ -622,42 +776,56 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       {profile?.role === "admin" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
-          {/* Admin: Manage Users (Promote/Demote) */}
+          {/* Admin: Manage Users (Promote/Demote/Edit) */}
           <div style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff", color: "#111" }}>
             <h3 style={{ marginTop: 0 }}>Admin: User Management</h3>
             <input 
               type="text" 
-              placeholder="Search all users by name or city..."
+              placeholder="Search all users by name or username..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ width: "100%", padding: "8px", marginBottom: "15px", boxSizing: "border-box", border: "1px solid #ccc", borderRadius: "4px" }}
             />
             
-            <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #eee", borderRadius: "4px" }}>
+            <div style={{ maxHeight: "400px", overflowY: "auto", border: "1px solid #eee", borderRadius: "4px" }}>
               {allUsers.length === 0 && <div style={{ padding: "10px" }}>No users found.</div>}
               {allUsers
                 .filter(u => 
                   (u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                   u.home_city?.toLowerCase().includes(searchQuery.toLowerCase()))
+                   u.username?.toLowerCase().includes(searchQuery.toLowerCase()))
                 )
                 .map(user => (
-                  <div key={user.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px", borderBottom: "1px solid #eee" }}>
+                  <div key={user.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", borderBottom: "1px solid #eee" }}>
                     <div>
-                      <strong>{user.full_name || "New Account (No Name Yet)"}</strong>
-                      <span style={{ marginLeft: "8px", fontSize: "12px", fontWeight: "bold", color: user.role === 'recruiter' ? '#3b82f6' : '#6b7280' }}>
-                        [{user.role.toUpperCase()}]
+                      <strong>{user.full_name || "No Name Set"}</strong>
+                      <span style={{ marginLeft: "8px", fontSize: "12px", color: "#6b7280" }}>
+                        @{user.username || "no_username"}
                       </span>
-                      <div style={{ fontSize: "12px", color: "#666" }}>{user.home_city || "No city specified"}</div>
+                      <br/>
+                      <span style={{ fontSize: "11px", fontWeight: "bold", color: user.role === 'recruiter' ? '#3b82f6' : '#6b7280', display: "inline-block", marginTop: "4px" }}>
+                        ROLE: {user.role.toUpperCase()}
+                      </span>
                     </div>
-                    <div style={{ display: "flex", gap: "10px" }}>
+                    <div style={{ display: "flex", gap: "8px", flexDirection: "column", alignItems: "flex-end" }}>
                       
+                      <button 
+                        onClick={() => {
+                          setAdminEditUser(user);
+                          setAdminEditUsername(user.username || "");
+                          setAdminEditFullName(user.full_name || "");
+                        }}
+                        style={{ padding: "4px 8px", backgroundColor: "#f3f4f6", color: "#111", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
+                      >
+                        ✏️ Force Edit Profile
+                      </button>
+
                       {user.role === "unemployed" && (
                         <select 
                           onChange={(e) => {
                             if (e.target.value) handlePromoteToRecruiter(user.id, e.target.value);
-                            e.target.value = ""; // Reset dropdown after action
+                            e.target.value = ""; 
                           }}
-                          style={{ padding: "6px", border: "1px solid #ccc", borderRadius: "4px", backgroundColor: "#10b981", color: "#fff", fontWeight: "bold", cursor: "pointer" }}
+                          style={{ padding: "4px", border: "1px solid #ccc", borderRadius: "4px", backgroundColor: "#10b981", color: "#fff", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}
                         >
                           <option value="">Promote to Recruiter ▾</option>
                           {companies.map(c => (
@@ -669,7 +837,7 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
                       {user.role === "recruiter" && (
                         <button 
                           onClick={() => handleDemoteToUnemployed(user.id)}
-                          style={{ padding: "6px 12px", backgroundColor: "#ef4444", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                          style={{ padding: "4px 8px", backgroundColor: "#ef4444", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "12px" }}
                         >
                           Demote to Unemployed
                         </button>
@@ -741,6 +909,31 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
             <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
               Add Job Opening
             </button>
+          </form>
+        </div>
+      )}
+
+      {/* ADMIN EDIT USER MODAL */}
+      {adminEditUser && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.75)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }}>
+          <form onSubmit={handleAdminSaveOverride} style={{ backgroundColor: "#fff", padding: "32px", borderRadius: "16px", maxWidth: "400px", width: "100%" }}>
+            <h2 style={{ marginTop: 0, color: "#111" }}>Force Edit Profile</h2>
+            <p style={{ fontSize: "14px", color: "#666" }}>You are overriding details for ID: {adminEditUser.id}</p>
+            
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px", color: "#111" }}>Username (Must be unique)</label>
+              <input type="text" value={adminEditUsername} onChange={(e) => setAdminEditUsername(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }} required />
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px", color: "#111" }}>Full Name</label>
+              <input type="text" value={adminEditFullName} onChange={(e) => setAdminEditFullName(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" }} required />
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button type="button" onClick={() => setAdminEditUser(null)} style={{ padding: "8px 16px", backgroundColor: "#e5e7eb", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>Cancel</button>
+              <button type="submit" style={{ padding: "8px 16px", backgroundColor: "#ef4444", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>Force Save</button>
+            </div>
           </form>
         </div>
       )}
