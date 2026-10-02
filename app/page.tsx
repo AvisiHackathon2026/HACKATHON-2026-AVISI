@@ -25,6 +25,9 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
 
   // --- CALCULATOR STATE ---
+  const [calcMode, setCalcMode] = useState<1 | 2>(2);
+  const [targetMonthlySalary, setTargetMonthlySalary] = useState<number>(3000);
+  const [travelCostsHourly, setTravelCostsHourly] = useState<number>(0);
   const [maxClientRate, setMaxClientRate] = useState<number>(120);
   const [desiredMargin, setDesiredMargin] = useState<number>(10);
   const [costFactor, setCostFactor] = useState<number>(2.0);
@@ -289,37 +292,94 @@ export default function App() {
         {currentView === 'calculator' && (
           <div style={{ maxWidth: '800px' }}>
             <h1>Recruiter Calculator</h1>
-            <section style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
-              <h3 style={{ marginTop: 0 }}>Inputs (Budget ➔ Salary)</h3>
-              <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
-                Max Client Budget/Rate (€):
-                <input type="number" value={maxClientRate} onChange={(e) => setMaxClientRate(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px' }} />
-              </label>
-              <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
-                Desired Margin (€):
-                <input type="number" value={desiredMargin} onChange={(e) => setDesiredMargin(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px' }} />
-              </label>
-              <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
-                Cost Price Factor:
-                <input type="number" step="0.1" value={costFactor} onChange={(e) => setCostFactor(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px' }} />
-              </label>
-              <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
-                Workweek (Hours):
-                <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px' }} />
-              </label>
-            </section>
-            <section style={{ background: theme.sidebarBg, padding: '1.5rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
-              <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
-              <p><strong>1. Target Cost Price:</strong> €{maxClientRate} - €{desiredMargin} margin = €{(maxClientRate - desiredMargin).toFixed(2)} / hour</p>
-              <p><strong>2. Gross Hourly Wage:</strong> €{(maxClientRate - desiredMargin).toFixed(2)} / {costFactor} factor = €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)}</p>
-              <p><strong>3. Gross Weekly Salary:</strong> €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)} / factor × {hoursPerWeek} hours = €{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)}</p>
-              <p><strong>4. Max Monthly Salary:</strong> (€{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)} × 13) / 3 = <strong>€{((((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek) * 13 / 3).toFixed(2)}</strong></p>
-            </section>
             
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              <button 
+                onClick={() => setCalcMode(1)}
+                style={{ flex: 1, padding: '10px', background: calcMode === 1 ? '#3b82f6' : '#e5e7eb', color: calcMode === 1 ? '#fff' : '#111', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Mode 1: Target Salary ➔ Client Rate
+              </button>
+              <button 
+                onClick={() => setCalcMode(2)}
+                style={{ flex: 1, padding: '10px', background: calcMode === 2 ? '#3b82f6' : '#e5e7eb', color: calcMode === 2 ? '#fff' : '#111', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Mode 2: Client Budget ➔ Max Salary
+              </button>
+            </div>
+
+            {calcMode === 1 ? (
+              <>
+                <section style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
+                  <h3 style={{ marginTop: 0 }}>Inputs (Target Salary ➔ Client Rate)</h3>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Target Monthly Salary (€):
+                    <input type="number" value={targetMonthlySalary} onChange={(e) => setTargetMonthlySalary(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Travel Costs (Hourly €):
+                    <input type="number" value={travelCostsHourly} onChange={(e) => setTravelCostsHourly(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Desired Margin (€):
+                    <input type="number" value={desiredMargin} onChange={(e) => setDesiredMargin(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Cost Price Factor:
+                    <input type="number" step="0.1" value={costFactor} onChange={(e) => setCostFactor(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Workweek (Hours):
+                    <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                </section>
+                <section style={{ background: theme.sidebarBg, padding: '1.5rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
+                  <p><strong>1. Gross Weekly Salary:</strong> (€{targetMonthlySalary} × 3) / 13 = €{((targetMonthlySalary * 3) / 13).toFixed(2)} / week</p>
+                  <p><strong>2. Gross Hourly Wage:</strong> €{((targetMonthlySalary * 3) / 13).toFixed(2)} / {hoursPerWeek} hours = €{(((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)}</p>
+                  <p><strong>3. Cost Price:</strong> €{(((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)} × {costFactor} factor = €{((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor).toFixed(2)}</p>
+                  <p><strong>4. All-in Cost:</strong> €{((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor).toFixed(2)} + €{travelCostsHourly} travel = €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)}</p>
+                  <p><strong>5. Final Client Rate:</strong> €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)} + €{desiredMargin} margin = <strong>€{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}</strong></p>
+                </section>
+              </>
+            ) : (
+              <>
+                <section style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
+                  <h3 style={{ marginTop: 0 }}>Inputs (Budget ➔ Salary)</h3>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Max Client Budget/Rate (€):
+                    <input type="number" value={maxClientRate} onChange={(e) => setMaxClientRate(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Desired Margin (€):
+                    <input type="number" value={desiredMargin} onChange={(e) => setDesiredMargin(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Cost Price Factor:
+                    <input type="number" step="0.1" value={costFactor} onChange={(e) => setCostFactor(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                  <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                    Workweek (Hours):
+                    <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                  </label>
+                </section>
+                <section style={{ background: theme.sidebarBg, padding: '1.5rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
+                  <p><strong>1. Target Cost Price:</strong> €{maxClientRate} - €{desiredMargin} margin = €{(maxClientRate - desiredMargin).toFixed(2)} / hour</p>
+                  <p><strong>2. Gross Hourly Wage:</strong> €{(maxClientRate - desiredMargin).toFixed(2)} / {costFactor} factor = €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)}</p>
+                  <p><strong>3. Gross Weekly Salary:</strong> €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)} / factor × {hoursPerWeek} hours = €{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)}</p>
+                  <p><strong>4. Max Monthly Salary:</strong> (€{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)} × 13) / 3 = <strong>€{((((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek) * 13 / 3).toFixed(2)}</strong></p>
+                </section>
+              </>
+            )}
+
             {negotiationMatchId && (
               <button
                 onClick={async () => {
-                  const wage = ((maxClientRate - desiredMargin) / costFactor).toFixed(2);
+                  const wage = calcMode === 1 
+                    ? (((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)
+                    : ((maxClientRate - desiredMargin) / costFactor).toFixed(2);
+                    
                   await supabase.from("messages").insert({
                     match_id: negotiationMatchId,
                     sender_id: session.user.id,
@@ -341,7 +401,7 @@ export default function App() {
                   cursor: 'pointer'
                 }}
               >
-                Send Proposal (€{((maxClientRate - desiredMargin) / costFactor).toFixed(2)}/hr) to Chat
+                Send Proposal (€{calcMode === 1 ? (((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2) : ((maxClientRate - desiredMargin) / costFactor).toFixed(2)}/hr) to Chat
               </button>
             )}
           </div>
