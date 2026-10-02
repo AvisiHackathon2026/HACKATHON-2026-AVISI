@@ -133,9 +133,12 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
   // Negotiation State Checks
   const isSalaryAccepted = messages.some((m) => m.content.startsWith("[SALARY_ACCEPTED:"));
   const isMeetingAccepted = messages.some((m) => m.content === "[MEETING_ACCEPTED]");
-  const isHired = messages.some((m) => m.content === "[SYSTEM_HIRED]");
   
-  const canHire = isSalaryAccepted && isMeetingAccepted && myRole === "recruiter" && !isHired;
+  const isHiredByMe = messages.some((m) => m.content === "[SYSTEM_HIRED]");
+  const isHiredBySomeoneElse = selectedMatch?.otherUser.role === "employed" && !isHiredByMe;
+  const isLocked = isHiredByMe || isHiredBySomeoneElse;
+  
+  const canHire = isSalaryAccepted && isMeetingAccepted && myRole === "recruiter" && !isLocked;
 
   return (
     <div style={{ display: "flex", height: "70vh", border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden", backgroundColor: "#fff", color: "#111" }}>
@@ -177,7 +180,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
               <div style={{ fontWeight: "bold" }}>Chatting with {selectedMatch.otherUser.full_name}</div>
               
               <div style={{ display: "flex", gap: "10px" }}>
-                {myRole === "recruiter" && !isHired && (
+                {myRole === "recruiter" && !isLocked && (
                   <>
                     <button 
                       onClick={() => sendRawMessage("[MEETING_PROPOSED]")}
@@ -190,7 +193,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                         onClick={() => onGoToCalculator(selectedMatch.id)}
                         style={{ padding: "6px 12px", backgroundColor: "#3b82f6", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "12px" }}
                       >
-                        💰 Propose Salary (Calc)
+                        🧮 Propose Salary (Calc)
                       </button>
                     )}
                   </>
@@ -207,9 +210,9 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
               </div>
             </div>
 
-            {isHired && (
-              <div style={{ backgroundColor: "#10b981", color: "#fff", padding: "10px", textAlign: "center", fontWeight: "bold" }}>
-                ✅ This candidate has been officially hired!
+            {isLocked && (
+              <div style={{ backgroundColor: isHiredByMe ? "#10b981" : "#ef4444", color: "#fff", padding: "10px", textAlign: "center", fontWeight: "bold" }}>
+                {isHiredByMe ? "✅ You have officially hired this candidate!" : "🔒 This candidate has been hired by another company and is off the market."}
               </div>
             )}
 
@@ -228,9 +231,9 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                     return (
                       <div key={msg.id} style={{ margin: "15px 0", padding: "15px", border: "2px solid #3b82f6", borderRadius: "8px", backgroundColor: "#eff6ff", textAlign: "center" }}>
                         <div style={{ fontSize: "16px", fontWeight: "bold", color: "#1e3a8a", marginBottom: "10px" }}>
-                          💰 Salary Proposal: €{amount} / hr
+                          🧮 Salary Proposal: €{amount} / hr
                         </div>
-                        {myRole === "unemployed" && !isSalaryAccepted && !isHired && (
+                        {myRole === "unemployed" && !isSalaryAccepted && !isLocked && (
                           <button onClick={() => sendRawMessage(`[SALARY_ACCEPTED: ${amount}]`)} style={{ padding: "8px 16px", backgroundColor: "#3b82f6", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
                             Accept Offer
                           </button>
@@ -255,7 +258,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                         <div style={{ fontSize: "16px", fontWeight: "bold", color: "#92400e", marginBottom: "10px" }}>
                           📅 A Meeting was proposed.
                         </div>
-                        {myRole === "unemployed" && !isMeetingAccepted && !isHired && (
+                        {myRole === "unemployed" && !isMeetingAccepted && !isLocked && (
                           <button onClick={() => sendRawMessage(`[MEETING_ACCEPTED]`)} style={{ padding: "8px 16px", backgroundColor: "#f59e0b", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
                             Accept Meeting
                           </button>
@@ -301,11 +304,11 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
             <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", borderTop: "1px solid #ccc", backgroundColor: "#fff" }}>
               <input 
                 type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)}
-                placeholder={isHired ? "Chat locked (Hired)" : "Type a message..."}
-                disabled={isHired}
-                style={{ flex: 1, padding: "10px", borderRadius: "20px", border: "1px solid #ccc", marginRight: "10px" }}
+                placeholder={isLocked ? "Chat locked (Candidate Off-The-Market)" : "Type a message..."}
+                disabled={isLocked}
+                style={{ flex: 1, padding: "10px", borderRadius: "20px", border: "1px solid #ccc", marginRight: "10px", backgroundColor: isLocked ? "#f3f4f6" : "#fff" }}
               />
-              <button type="submit" disabled={isHired} style={{ padding: "10px 20px", backgroundColor: isHired ? "#ccc" : "#1976d2", color: "#fff", border: "none", borderRadius: "20px", cursor: isHired ? "not-allowed" : "pointer", fontWeight: "bold" }}>
+              <button type="submit" disabled={isLocked} style={{ padding: "10px 20px", backgroundColor: isLocked ? "#ccc" : "#1976d2", color: "#fff", border: "none", borderRadius: "20px", cursor: isLocked ? "not-allowed" : "pointer", fontWeight: "bold" }}>
                 Send
               </button>
             </form>
