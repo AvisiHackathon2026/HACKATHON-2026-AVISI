@@ -6,17 +6,32 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface SwipeFeatureProps {
   userId: string;
+  userEmail: string;
 }
 
-export default function SwipeFeature({ userId }: SwipeFeatureProps) {
+export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Cards data
+  // Toggle for unemployed users to switch between profile editor and swiping
+  const [activeTab, setActiveTab] = useState<"swipe" | "edit_profile">("swipe");
+
+  // Candidate Profile Form State
+  const [fullName, setFullName] = useState("");
+  const [homeCity, setHomeCity] = useState("");
+  const [expectedSalary, setExpectedSalary] = useState("");
+  const [motivation, setMotivation] = useState("");
+  const [profilePicUrl, setProfilePicUrl] = useState("");
+  const [cvUrl, setCvUrl] = useState("");
+  const [uploadingPic, setUploadingPic] = useState(false);
+  const [uploadingCv, setUploadingCv] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("");
+
+  // Swipe Cards Data
   const [jobCards, setJobCards] = useState<any[]>([]);
   const [candidateCards, setCandidateCards] = useState<any[]>([]);
 
-  // Admin states
+  // Admin States
   const [companies, setCompanies] = useState<any[]>([]);
   const [newCompanyName, setNewCompanyName] = useState("");
   const [newCompanyDesc, setNewCompanyDesc] = useState("");
@@ -25,44 +40,62 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
   const [jobDesc, setJobDesc] = useState("");
   const [jobRate, setJobRate] = useState("");
 
-  // Recruiter assignment state
+  // Recruiter Company Selection
   const [recruiterCompanyId, setRecruiterCompanyId] = useState("");
 
-  // Match alert modal state
+  // Match Modal
   const [matchedItem, setMatchedItem] = useState<any>(null);
+
+  const isAdminEmail = userEmail === "sietsekarsai@gmail.com";
 
   useEffect(() => {
     fetchProfileAndData();
-  }, [userId]);
+  }, [userId, userEmail]);
 
   const fetchProfileAndData = async () => {
     setLoading(true);
 
-    // Fetch or create profile
+    // Fetch existing profile
     let { data: userProfile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
 
+    // Force role to admin if logging in with the specific admin email
+    const assignedRole = isAdminEmail ? "admin" : userProfile?.role || "unemployed";
+
     if (!userProfile) {
       const { data: newProfile } = await supabase
         .from("profiles")
-        .insert({ id: userId, role: "unemployed" })
+        .insert({ id: userId, role: assignedRole })
         .select()
         .single();
       userProfile = newProfile;
+    } else if (isAdminEmail && userProfile.role !== "admin") {
+      await supabase.from("profiles").update({ role: "admin" }).eq("id", userId);
+      userProfile.role = "admin";
     }
 
     setProfile(userProfile);
 
-    // Fetch existing companies
+    // Populate profile form fields
+    if (userProfile) {
+      setFullName(userProfile.full_name || "");
+      setHomeCity(userProfile.home_city || "");
+      setExpectedSalary(userProfile.expected_salary || "");
+      setMotivation(userProfile.motivation || "");
+      setProfilePicUrl(userProfile.profile_picture_url || "");
+      setCvUrl(userProfile.cv_url || "");
+    }
+
+    // Fetch companies list
     const { data: companyList } = await supabase.from("companies").select("*");
     if (companyList) setCompanies(companyList);
 
-    if (userProfile?.role === "unemployed") {
+    if (assignedRole === "unemployed") {
       await loadJobsForUnemployed(userProfile.id);
-    } else if (userProfile?.role === "recruiter") {
+    } else if (assignedRole === "recruiter") {
       await loadCandidatesForRecruiter(userProfile.id);
     }
 
@@ -70,7 +103,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
   };
 
   const loadJobsForUnemployed = async (currentUserId: string) => {
-    // Get list of target_ids already swiped by this user
     const { data: existingSwipes } = await supabase
       .from("swipes")
       .select("target_id")
@@ -78,7 +110,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
 
     const swipedJobIds = existingSwipes?.map((s) => s.target_id) || [];
 
-    // Fetch jobs along with company name
     const { data: jobs } = await supabase
       .from("jobs")
       .select("*, companies(name)");
@@ -97,7 +128,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
 
     const swipedUserIds = existingSwipes?.map((s) => s.target_id) || [];
 
-    // Fetch unemployed candidates
     const { data: candidates } = await supabase
       .from("profiles")
       .select("*")
@@ -109,14 +139,76 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
     }
   };
 
-  // Role Switcher Handler
+  // Role Switcher Handler (Blocked if user is admin email)
   const handleRoleChange = async (newRole: string) => {
+    if (isAdminEmail) return;
+
     const updates: any = { role: newRole };
     if (newRole === "recruiter" && recruiterCompanyId) {
       updates.company_id = recruiterCompanyId;
     }
+
     await supabase.from("profiles").update(updates).eq("id", userId);
     fetchProfileAndData();
+  };
+
+  // File Upload Handler for Profile Picture & CV
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "picture" | "cv"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === "picture") setUploadingPic(true);
+    if (type === "cv") setUploadingCv(true);
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${userId}/${type}_${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("candidate_assets")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      alert(`Error uploading ${type}: ${uploadError.message}`);
+    } else {
+      const { data } = supabase.storage
+        .from("candidate_assets")
+        .getPublicUrl(filePath);
+
+      if (type === "picture") setProfilePicUrl(data.publicUrl);
+      if (type === "cv") setCvUrl(data.publicUrl);
+    }
+
+    if (type === "picture") setUploadingPic(false);
+    if (type === "cv") setUploadingCv(false);
+  };
+
+  // Unemployed Profile Save Handler
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaveStatus("Saving...");
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: fullName,
+        home_city: homeCity,
+        expected_salary: expectedSalary,
+        motivation: motivation,
+        profile_picture_url: profilePicUrl,
+        cv_url: cvUrl,
+      })
+      .eq("id", userId);
+
+    if (error) {
+      setSaveStatus(`Failed to save: ${error.message}`);
+    } else {
+      setSaveStatus("Profile updated successfully!");
+      setTimeout(() => setSaveStatus(""), 3000);
+      fetchProfileAndData();
+    }
   };
 
   // Admin: Create Company
@@ -133,7 +225,7 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
       setCompanies([...companies, data]);
       setNewCompanyName("");
       setNewCompanyDesc("");
-      alert("Company created successfully!");
+      alert("Company created!");
     }
   };
 
@@ -152,10 +244,10 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
     setJobTitle("");
     setJobDesc("");
     setJobRate("");
-    alert("Job created successfully!");
+    alert("Job opening posted!");
   };
 
-  // Handle Swipe logic
+  // Swipe logic
   const handleSwipe = async (
     direction: string,
     targetId: string,
@@ -163,7 +255,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
   ) => {
     if (direction !== "left" && direction !== "right") return;
 
-    // Record swipe in Supabase
     await supabase.from("swipes").insert({
       swiper_id: userId,
       swiper_role: profile.role,
@@ -171,11 +262,8 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
       direction: direction,
     });
 
-    // Match Check
     if (direction === "right") {
       if (profile.role === "unemployed") {
-        // Target is a job (cardData = job)
-        // Check if any recruiter of this job's company swiped right on this unemployed candidate
         const { data: recruiterSwipes } = await supabase
           .from("swipes")
           .select("swiper_id")
@@ -184,7 +272,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
           .eq("direction", "right");
 
         if (recruiterSwipes && recruiterSwipes.length > 0) {
-          // Verify if recruiter belongs to cardData.company_id
           const recruiterIds = recruiterSwipes.map((s) => s.swiper_id);
           const { data: matchingRecruiters } = await supabase
             .from("profiles")
@@ -193,7 +280,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
             .eq("company_id", cardData.company_id);
 
           if (matchingRecruiters && matchingRecruiters.length > 0) {
-            // MATCH FOUND!
             await supabase.from("matches").insert({
               unemployed_id: userId,
               recruiter_id: matchingRecruiters[0].id,
@@ -203,8 +289,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
           }
         }
       } else if (profile.role === "recruiter") {
-        // Target is an unemployed profile (cardData = profile)
-        // Check if candidate swiped right on any job from recruiter's company
         if (!profile.company_id) return;
 
         const { data: companyJobs } = await supabase
@@ -224,7 +308,6 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
             .in("target_id", companyJobIds);
 
           if (candidateSwipes && candidateSwipes.length > 0) {
-            // MATCH FOUND!
             await supabase.from("matches").insert({
               unemployed_id: targetId,
               recruiter_id: userId,
@@ -238,7 +321,11 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
   };
 
   if (loading) {
-    return <div style={{ textAlign: "center", padding: "40px", fontFamily: "sans-serif" }}>Loading swipe engine...</div>;
+    return (
+      <div style={{ textAlign: "center", padding: "40px", fontFamily: "sans-serif" }}>
+        Loading platform...
+      </div>
+    );
   }
 
   return (
@@ -246,41 +333,49 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
       <style>{`
         .absolute-card { position: absolute; width: 100%; }
       `}</style>
-      {/* Role Switcher Navigation */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", padding: "10px", backgroundColor: "#f3f4f6", borderRadius: "8px" }}>
-        <span style={{ fontWeight: "bold" }}>Role: {profile?.role?.toUpperCase()}</span>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <button
-            onClick={() => handleRoleChange("unemployed")}
-            style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", backgroundColor: profile?.role === "unemployed" ? "#3b82f6" : "#e5e7eb", color: profile?.role === "unemployed" ? "#fff" : "#000" }}
-          >
-            Unemployed
-          </button>
-          <button
-            onClick={() => handleRoleChange("recruiter")}
-            style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", backgroundColor: profile?.role === "recruiter" ? "#3b82f6" : "#e5e7eb", color: profile?.role === "recruiter" ? "#fff" : "#000" }}>
-            Recruiter
-          </button>
-          <button
-            onClick={() => handleRoleChange("admin")}
-            style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", backgroundColor: profile?.role === "admin" ? "#3b82f6" : "#e5e7eb", color: profile?.role === "admin" ? "#fff" : "#000" }}
-          >
-            Admin
-          </button>
+      
+      {/* Role Navigation */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", padding: "12px", backgroundColor: "#f3f4f6", borderRadius: "8px" }}>
+        <span style={{ fontWeight: "bold" }}>
+          Role: {profile?.role?.toUpperCase()}
+          {isAdminEmail && " (Permanent Admin)"}
+        </span>
+        <div style={{ display: "flex", gap: "8px" }}>
+          {!isAdminEmail && (
+            <>
+              <button
+                onClick={() => handleRoleChange("unemployed")}
+                style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", backgroundColor: profile?.role === "unemployed" ? "#3b82f6" : "#e5e7eb", color: profile?.role === "unemployed" ? "#fff" : "#000" }}
+              >
+                Unemployed
+              </button>
+              <button
+                onClick={() => handleRoleChange("recruiter")}
+                style={{ padding: "6px 12px", borderRadius: "4px", border: "none", cursor: "pointer", backgroundColor: profile?.role === "recruiter" ? "#3b82f6" : "#e5e7eb", color: profile?.role === "recruiter" ? "#fff" : "#000" }}
+              >
+                Recruiter
+              </button>
+            </>
+          )}
+          {isAdminEmail && (
+            <span style={{ backgroundColor: "#10b981", color: "#fff", padding: "4px 8px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold" }}>
+              Admin Locked
+            </span>
+          )}
         </div>
       </div>
 
       {/* Recruiter Company Selection */}
       {profile?.role === "recruiter" && (
         <div style={{ marginBottom: "20px", padding: "12px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold" }}>Select Your Company:</label>
+          <label style={{ display: "block", marginBottom: "6px", fontWeight: "bold" }}>Assign Recruiter to Company:</label>
           <select
             value={profile.company_id || recruiterCompanyId}
             onChange={(e) => {
               setRecruiterCompanyId(e.target.value);
               handleRoleChange("recruiter");
             }}
-            style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", background: "#fff", color: "#000" }}
+            style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", color: "#111", backgroundColor: "#fff" }}
           >
             <option value="">-- Choose Company --</option>
             {companies.map((c) => (
@@ -292,141 +387,171 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
         </div>
       )}
 
-      {/* ADMIN PANEL VIEW */}
-      {profile?.role === "admin" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Create Company Form */}
-          <form onSubmit={handleCreateCompany} style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff" }}>
-            <h3 style={{ marginTop: 0 }}>Admin: Add Company</h3>
-            <input
-              type="text"
-              placeholder="Company Name"
-              value={newCompanyName}
-              onChange={(e) => setNewCompanyName(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", background: "#fff", color: "#000", border: "1px solid #ccc" }}
-              required
-            />
-            <textarea
-              placeholder="Company Description"
-              value={newCompanyDesc}
-              onChange={(e) => setNewCompanyDesc(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", background: "#fff", color: "#000", border: "1px solid #ccc" }}
-            />
-            <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
-              Add Company
-            </button>
-          </form>
-
-          {/* Create Job Form */}
-          <form onSubmit={handleCreateJob} style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff" }}>
-            <h3 style={{ marginTop: 0 }}>Admin: Add Job Post</h3>
-            <select
-              value={selectedCompanyId}
-              onChange={(e) => setSelectedCompanyId(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", background: "#fff", color: "#000", border: "1px solid #ccc" }}
-              required
-            >
-              <option value="">-- Select Company --</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Job Title (e.g. Senior Frontend Dev)"
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", background: "#fff", color: "#000", border: "1px solid #ccc" }}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Hourly Rate / Salary (e.g. $45/hr)"
-              value={jobRate}
-              onChange={(e) => setJobRate(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", background: "#fff", color: "#000", border: "1px solid #ccc" }}
-            />
-            <textarea
-              placeholder="Job Description"
-              value={jobDesc}
-              onChange={(e) => setJobDesc(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", background: "#fff", color: "#000", border: "1px solid #ccc" }}
-            />
-            <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
-              Add Job Opening
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* SWIPE DECK FOR UNEMPLOYED */}
+      {/* UNEMPLOYED VIEW: Toggle between Profile Editor & Swipe Cards */}
       {profile?.role === "unemployed" && (
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ color: "#fff" }}>Find Your Next Job</h2>
-          <div style={{ position: "relative", width: "100%", height: "420px", marginTop: "20px" }}>
-            {jobCards.length === 0 ? (
-              <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
-                No more companies or jobs to swipe! Check back later.
-              </div>
-            ) : (
-              jobCards.map((job) => (
-                <TinderCard
-                  key={job.id}
-                  onSwipe={(dir) => handleSwipe(dir, job.id, job)}
-                  preventSwipe={["up", "down"]}
-                  className="absolute-card"
-                >
-                  <div
-                    style={{
-                      backgroundColor: "#ffffff",
-                      borderRadius: "16px",
-                      padding: "24px",
-                      boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
-                      border: "1px solid #e5e7eb",
-                      height: "360px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      textAlign: "left",
-                      userSelect: "none",
-                      cursor: "grab",
-                      color: "#111"
-                    }}
-                  >
-                    <div>
-                      <span style={{ fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", color: "#6b7280", letterSpacing: "1px" }}>
-                        {job.companies?.name || "Company"}
-                      </span>
-                      <h2 style={{ margin: "8px 0", fontSize: "24px", color: "#111827" }}>{job.title}</h2>
-                      <p style={{ fontSize: "18px", color: "#059669", fontWeight: "bold", margin: "4px 0 16px 0" }}>
-                        {job.hourly_rate ? job.hourly_rate : "Rate Negotiable"}
-                      </p>
-                      <p style={{ color: "#4b5563", fontSize: "14px", lineHeight: "1.5", maxHeight: "150px", overflow: "hidden" }}>
-                        {job.description || "No description provided."}
-                      </p>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px" }}>
-                      <span>👈 Swipe Left to Skip</span>
-                      <span>Swipe Right to Apply 👉</span>
-                    </div>
-                  </div>
-                </TinderCard>
-              ))
-            )}
+        <div>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+            <button
+              onClick={() => setActiveTab("swipe")}
+              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "swipe" ? "#111827" : "#e5e7eb", color: activeTab === "swipe" ? "#fff" : "#374151", fontWeight: "bold" }}
+            >
+              💼 Swipe Jobs
+            </button>
+            <button
+              onClick={() => setActiveTab("edit_profile")}
+              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "edit_profile" ? "#111827" : "#e5e7eb", color: activeTab === "edit_profile" ? "#fff" : "#374151", fontWeight: "bold" }}
+            >
+              👤 Edit Applicant Profile
+            </button>
           </div>
+
+          {activeTab === "edit_profile" ? (
+            <form onSubmit={handleSaveProfile} style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "12px", border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <h2 style={{ margin: 0 }}>Applicant Profile Setup</h2>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Full Name</label>
+                <input
+                  type="text"
+                  placeholder="John Doe"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Home City</label>
+                <input
+                  type="text"
+                  placeholder="Amsterdam"
+                  value={homeCity}
+                  onChange={(e) => setHomeCity(e.target.value)}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Expected Salary / Hour</label>
+                <input
+                  type="text"
+                  placeholder="€25 / hr"
+                  value={expectedSalary}
+                  onChange={(e) => setExpectedSalary(e.target.value)}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Motivation Statement</label>
+                <textarea
+                  placeholder="Explain why companies should hire you..."
+                  value={motivation}
+                  onChange={(e) => setMotivation(e.target.value)}
+                  rows={4}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Profile Picture</label>
+                {profilePicUrl && (
+                  <img src={profilePicUrl} alt="Profile Preview" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", marginBottom: "8px" }} />
+                )}
+                <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, "picture")} disabled={uploadingPic} />
+                {uploadingPic && <span style={{ fontSize: "12px", color: "#6b7280" }}> Uploading image...</span>}
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>CV Document (PDF / Doc)</label>
+                {cvUrl && (
+                  <a href={cvUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginBottom: "8px", color: "#2563eb", fontWeight: "bold", fontSize: "14px" }}>
+                    📄 View Uploaded CV
+                  </a>
+                )}
+                <input type="file" accept=".pdf,.doc,.docx" onChange={(e) => handleFileUpload(e, "cv")} disabled={uploadingCv} />
+                {uploadingCv && <span style={{ fontSize: "12px", color: "#6b7280" }}> Uploading CV...</span>}
+              </div>
+
+              <button
+                type="submit"
+                style={{ padding: "12px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer" }}
+              >
+                Save Profile
+              </button>
+
+              {saveStatus && <p style={{ textAlign: "center", color: saveStatus.includes("Failed") ? "#ef4444" : "#10b981", margin: 0 }}>{saveStatus}</p>}
+            </form>
+          ) : (
+            <div style={{ textAlign: "center" }}>
+              <h2>Available Job Openings</h2>
+              <div style={{ position: "relative", width: "100%", height: "440px", marginTop: "20px" }}>
+                {jobCards.length === 0 ? (
+                  <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
+                    No job cards available right now.
+                  </div>
+                ) : (
+                  jobCards.map((job) => (
+                    <TinderCard
+                      key={job.id}
+                      onSwipe={(dir) => handleSwipe(dir, job.id, job)}
+                      preventSwipe={["up", "down"]}
+                      className="absolute-card"
+                    >
+                      <div
+                        style={{
+                          backgroundColor: "#ffffff",
+                          borderRadius: "16px",
+                          padding: "24px",
+                          boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+                          border: "1px solid #e5e7eb",
+                          height: "380px",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          textAlign: "left",
+                          userSelect: "none",
+                          cursor: "grab",
+                        }}
+                      >
+                        <div>
+                          <span style={{ fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", color: "#6b7280", letterSpacing: "1px" }}>
+                            {job.companies?.name || "Company"}
+                          </span>
+                          <h2 style={{ margin: "8px 0", fontSize: "24px", color: "#111827" }}>{job.title}</h2>
+                          <p style={{ fontSize: "18px", color: "#059669", fontWeight: "bold", margin: "4px 0 16px 0" }}>
+                            {job.hourly_rate ? job.hourly_rate : "Rate Negotiable"}
+                          </p>
+                          <p style={{ color: "#4b5563", fontSize: "14px", lineHeight: "1.5", maxHeight: "150px", overflow: "hidden" }}>
+                            {job.description || "No description provided."}
+                          </p>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px" }}>
+                          <span>👈 Swipe Left to Skip</span>
+                          <span>Swipe Right to Apply 👉</span>
+                        </div>
+                      </div>
+                    </TinderCard>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* SWIPE DECK FOR RECRUITERS */}
+      {/* RECRUITER VIEW: Candidate Cards */}
       {profile?.role === "recruiter" && (
         <div style={{ textAlign: "center" }}>
-          <h2 style={{ color: "#fff" }}>Find Candidates</h2>
-          <div style={{ position: "relative", width: "100%", height: "420px", marginTop: "20px" }}>
+          <h2>Swipe Applicants</h2>
+          <div style={{ position: "relative", width: "100%", height: "480px", marginTop: "20px" }}>
             {candidateCards.length === 0 ? (
               <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
-                No more candidates to swipe! Check back later.
+                No candidate cards available to swipe right now.
               </div>
             ) : (
               candidateCards.map((candidate) => (
@@ -440,56 +565,155 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
                     style={{
                       backgroundColor: "#ffffff",
                       borderRadius: "16px",
-                      padding: "24px",
+                      padding: "20px",
                       boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
                       border: "1px solid #e5e7eb",
-                      height: "360px",
+                      height: "420px",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "space-between",
                       textAlign: "left",
                       userSelect: "none",
                       cursor: "grab",
-                      color: "#111"
                     }}
                   >
                     <div>
-                      <h2 style={{ margin: "0 0 12px 0", fontSize: "24px", color: "#111827" }}>
-                        {candidate.full_name || "Anonymous Candidate"}
-                      </h2>
-                      <div style={{ marginBottom: "12px" }}>
-                        <strong style={{ fontSize: "14px", color: "#374151" }}>Skills: </strong>
-                        <p style={{ margin: "4px 0", color: "#4b5563", fontSize: "14px" }}>
-                          {candidate.skills || "Skills not listed yet"}
-                        </p>
+                      {/* Header with Photo, Name & City */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+                        <div
+                          style={{
+                            width: "64px",
+                            height: "64px",
+                            borderRadius: "50%",
+                            backgroundColor: "#e5e7eb",
+                            backgroundImage: candidate.profile_picture_url ? `url(${candidate.profile_picture_url})` : "none",
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            flexShrink: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justify: "center",
+                            fontSize: "24px",
+                          }}
+                        >
+                          {!candidate.profile_picture_url && "👤"}
+                        </div>
+                        <div>
+                          <h2 style={{ margin: 0, fontSize: "20px", color: "#111827" }}>
+                            {candidate.full_name || "Unnamed Applicant"}
+                          </h2>
+                          <p style={{ margin: "2px 0 0 0", color: "#6b7280", fontSize: "14px" }}>
+                            📍 {candidate.home_city || "Location unspecified"}
+                          </p>
+                        </div>
                       </div>
-                      <div style={{ marginBottom: "12px" }}>
-                        <strong style={{ fontSize: "14px", color: "#374151" }}>Desired Hours: </strong>
-                        <span style={{ fontSize: "14px", color: "#4b5563" }}>
-                          {candidate.desired_hours ? `${candidate.desired_hours} hrs/week` : "Not specified"}
+
+                      {/* Hourly Expectations */}
+                      <div style={{ marginBottom: "10px" }}>
+                        <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151" }}>Expected Salary: </span>
+                        <span style={{ fontSize: "14px", color: "#059669", fontWeight: "bold" }}>
+                          {candidate.expected_salary || "Negotiable"}
                         </span>
                       </div>
+
+                      {/* Motivation */}
+                      <div style={{ marginBottom: "12px" }}>
+                        <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151", display: "block" }}>Motivation:</span>
+                        <p style={{ margin: "4px 0", color: "#4b5563", fontSize: "13px", lineHeight: "1.4", maxHeight: "110px", overflow: "hidden" }}>
+                          "{candidate.motivation || "No motivation statement provided."}"
+                        </p>
+                      </div>
+
+                      {/* CV Link */}
                       {candidate.cv_url && (
                         <a
                           href={candidate.cv_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ display: "inline-block", marginTop: "8px", color: "#2563eb", textDecoration: "underline", fontSize: "14px", fontWeight: "bold" }}
+                          style={{ display: "inline-block", color: "#2563eb", textDecoration: "underline", fontSize: "14px", fontWeight: "bold" }}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          📄 View Candidate CV / Resume
+                          📄 View Candidate CV Document
                         </a>
                       )}
                     </div>
+
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px" }}>
                       <span>👈 Swipe Left to Pass</span>
-                      <span>Swipe Right to Hire 👉</span>
+                      <span>Swipe Right to Connect 👉</span>
                     </div>
                   </div>
                 </TinderCard>
               ))
             )}
           </div>
+        </div>
+      )}
+
+      {/* ADMIN PANEL VIEW */}
+      {profile?.role === "admin" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <form onSubmit={handleCreateCompany} style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff" }}>
+            <h3 style={{ marginTop: 0 }}>Admin: Add Company</h3>
+            <input
+              type="text"
+              placeholder="Company Name"
+              value={newCompanyName}
+              onChange={(e) => setNewCompanyName(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", border: "1px solid #ccc" }}
+              required
+            />
+            <textarea
+              placeholder="Company Description"
+              value={newCompanyDesc}
+              onChange={(e) => setNewCompanyDesc(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", border: "1px solid #ccc" }}
+            />
+            <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
+              Add Company
+            </button>
+          </form>
+
+          <form onSubmit={handleCreateJob} style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff" }}>
+            <h3 style={{ marginTop: 0 }}>Admin: Add Job Post</h3>
+            <select
+              value={selectedCompanyId}
+              onChange={(e) => setSelectedCompanyId(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", border: "1px solid #ccc" }}
+              required
+            >
+              <option value="">-- Select Company --</option>
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Job Title"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", border: "1px solid #ccc" }}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Hourly Rate / Salary"
+              value={jobRate}
+              onChange={(e) => setJobRate(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", border: "1px solid #ccc" }}
+            />
+            <textarea
+              placeholder="Job Description"
+              value={jobDesc}
+              onChange={(e) => setJobDesc(e.target.value)}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "#111", backgroundColor: "#fff", border: "1px solid #ccc" }}
+            />
+            <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
+              Add Job Opening
+            </button>
+          </form>
         </div>
       )}
 
@@ -517,14 +741,13 @@ export default function SwipeFeature({ userId }: SwipeFeatureProps) {
               textAlign: "center",
               maxWidth: "400px",
               boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-              color: "#111"
             }}
           >
             <h1 style={{ color: "#10b981", fontSize: "36px", margin: "0 0 8px 0" }}>It's a Match! 🎉</h1>
             <p style={{ fontSize: "16px", color: "#374151", margin: "0 0 24px 0" }}>
               {profile.role === "unemployed"
-                ? `You and ${matchedItem.companies?.name || "the company"} are mutually interested in the ${matchedItem.title} position!`
-                : `You and ${matchedItem.full_name || "this candidate"} matched!`}
+                ? `You and ${matchedItem.companies?.name || "the company"} matched on the ${matchedItem.title} position!`
+                : `You and candidate ${matchedItem.full_name || "this applicant"} matched!`}
             </p>
             <button
               onClick={() => setMatchedItem(null)}

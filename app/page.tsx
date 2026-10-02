@@ -365,7 +365,7 @@ export default function App() {
         {/* VIEW: SWIPE (NEW) */}
         {currentView === 'swipe' && (
           <div style={{ width: '100%', height: '100%' }}>
-            <SwipeFeature userId={session.user.id} />
+            <SwipeFeature userId={session.user.id} userEmail={session.user.email || ""} />
           </div>
         )}
 
