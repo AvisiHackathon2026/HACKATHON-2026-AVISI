@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -204,7 +204,7 @@ export default function App() {
   // --- UI: NOT LOGGED IN ---
   if (!session) {
     return (
-      <main className="grid-background" style={{ position: 'relative', overflow: 'hidden', padding: '2rem', fontFamily: 'sans-serif', color: theme.text, minHeight: '100vh' }}>
+      <main className="grid-background" style={{ position: 'relative', overflow: 'hidden', padding: '2rem', fontFamily: 'sans-serif', color: 'var(--text-color)', minHeight: '100vh' }}>
         
         <div style={{ position: 'relative', zIndex: 10 }}>
           <h1 className="text-gradient" style={{ fontSize: '3rem', fontWeight: '800' }}>Vanguard Engine</h1>
@@ -225,52 +225,52 @@ export default function App() {
 
   // --- UI: LOGGED IN (APP LAYOUT) ---
   return (
-    <div className="grid-background" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', color: theme.text, position: 'relative', overflow: 'hidden' }}>
+    <div className={isDarkMode ? "grid-background" : "grid-background light-mode"} style={{ display: "flex", minHeight: "100vh", fontFamily: "sans-serif", position: "relative", overflow: "hidden" }}>
       
       {/* SIDEBAR */}
-      <nav className="glass-card" style={{ position: 'relative', zIndex: 10, width: '250px', borderRight: `1px solid ${theme.borderColor}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+      <nav className="glass-card" style={{ position: 'relative', zIndex: 10, width: '250px', borderRight: `1px solid ${'var(--glass-border)'}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
         <h2 className="text-gradient" style={{ marginTop: 0, marginBottom: '2rem', fontSize: '1.5rem', fontWeight: '800' }}>Vanguard</h2>
         
 
 
         {/* SHARED: Dashboard */}
-        <button className="glass-card glass-button" onClick={() => setCurrentView('home')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'home' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'home' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('home')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'home' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'home' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🏠 Dashboard
         </button>
 
         {/* ADMIN & RECRUITER ONLY: Calculator */}
         {(userRole === 'admin' || userRole === 'recruiter') && (
-          <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
-            🧮 Calculator
+          <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
+            Calculator
           </button>
         )}
 
         {/* UNEMPLOYED ONLY: My Profile (Will be merged into My Profile later, keeping for compatibility now) */}
         {userRole === 'unemployed' && (
-          <button className="glass-card glass-button" onClick={() => setCurrentView('my_profile')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'my_profile' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'my_profile' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          <button className="glass-card glass-button" onClick={() => setCurrentView('my_profile')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'my_profile' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'my_profile' ? 'bold' : 'normal', borderRadius: '4px' }}>
             📄 My Profile
           </button>
         )}
 
         {/* ADMIN: Admin Panel / EVERYONE ELSE: Find Matches */}
-        <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
           {userRole === 'admin' ? '⚙️ Admin Panel' : '🔥 Find Matches'}
         </button>
 
         {/* SHARED: Chat & Calendar */}
-        <button className="glass-card glass-button" onClick={() => setCurrentView('chat')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'chat' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'chat' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('chat')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'chat' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'chat' ? 'bold' : 'normal', borderRadius: '4px' }}>
           💬 Chat
         </button>
-        <button className="glass-card glass-button" onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
           📅 Calendar
         </button>
 
         {/* SHARED: Companies */}
-        <button className="glass-card glass-button" onClick={() => setCurrentView('companies')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'companies' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'companies' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button className="glass-card glass-button" onClick={() => setCurrentView('companies')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'companies' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'companies' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🏢 Companies
         </button>
         
-        <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "15px", marginTop: "15px" }}><span style={{ fontSize: "0.9rem", color: "var(--text-color)", fontWeight: "bold" }}>Dark Mode</span><div onClick={() => { const newMode = !isDarkMode; setIsDarkMode(newMode); supabase.auth.updateUser({ data: { dark_mode: newMode } }); }} style={{ width: "50px", height: "28px", background: isDarkMode ? "#10b981" : "var(--glass-border)", borderRadius: "30px", position: "relative", cursor: "pointer", transition: "background 0.3s" }}><div style={{ position: "absolute", top: "2px", left: isDarkMode ? "24px" : "2px", width: "24px", height: "24px", background: "white", borderRadius: "50%", transition: "left 0.3s", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }} /></div></div><button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
           Sign Out
         </button>
       </nav>
@@ -288,7 +288,7 @@ export default function App() {
               {/* ADMIN & RECRUITER ONLY */}
               {(userRole === 'admin' || userRole === 'recruiter') && (
                 <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
-                  🧮 Calculator
+                  Calculator
                 </button>
               )}
 
@@ -338,21 +338,21 @@ export default function App() {
         {currentView === 'account' && (
           <div style={{ maxWidth: '500px' }}>
             <h1>Edit Account</h1>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: theme.cardBg, padding: '2rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: 'var(--glass-bg)', padding: '2rem', border: `1px solid ${'var(--glass-border)'}`, borderRadius: '8px' }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 Full Name:
-                <input type="text" placeholder="John Doe" value={fullName} onChange={e => setFullName(e.target.value)} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
+                <input type="text" placeholder="John Doe" value={fullName} onChange={e => setFullName(e.target.value)} style={{ padding: '10px', background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}` }} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 Company Name:
-                <input type="text" placeholder="Acme Corp" value={company} onChange={e => setCompany(e.target.value)} style={{ padding: '10px', background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}` }} />
+                <input type="text" placeholder="Acme Corp" value={company} onChange={e => setCompany(e.target.value)} style={{ padding: '10px', background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}` }} />
               </label>
-              <hr style={{ borderColor: theme.borderColor, margin: '10px 0' }} />
+              <hr style={{ borderColor: 'var(--glass-border)', margin: '10px 0' }} />
               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '1.1rem' }}>
                 <input type="checkbox" checked={isDarkMode} onChange={e => setIsDarkMode(e.target.checked)} style={{ transform: 'scale(1.5)', cursor: 'pointer' }} />
                 Enable Dark Mode
               </label>
-              <button onClick={handleSaveAccount} disabled={isSaving} style={{ marginTop: '15px', padding: '12px', cursor: 'pointer', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
+              <button onClick={handleSaveAccount} disabled={isSaving} style={{ marginTop: '15px', padding: '12px', cursor: 'pointer', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
@@ -367,13 +367,13 @@ export default function App() {
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <button 
                 onClick={() => setCalcMode(1)}
-                style={{ flex: 1, padding: '10px', background: calcMode === 1 ? '#3b82f6' : '#e5e7eb', color: calcMode === 1 ? '#fff' : '#111', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '10px', background: calcMode === 1 ? '#3b82f6' : 'var(--glass-bg)', color: calcMode === 1 ? 'white' : 'var(--text-color)', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
               >
                 Mode 1: Target Salary ➔ Client Rate
               </button>
               <button 
                 onClick={() => setCalcMode(2)}
-                style={{ flex: 1, padding: '10px', background: calcMode === 2 ? '#3b82f6' : '#e5e7eb', color: calcMode === 2 ? '#fff' : '#111', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '10px', background: calcMode === 2 ? '#3b82f6' : 'var(--glass-bg)', color: calcMode === 2 ? 'white' : 'var(--text-color)', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
               >
                 Mode 2: Client Budget ➔ Max Salary
               </button>
@@ -381,30 +381,30 @@ export default function App() {
 
             {calcMode === 1 ? (
               <>
-                <section style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
+                <section style={{ border: `1px solid ${'var(--glass-border)'}`, background: 'var(--glass-bg)', padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
                   <h3 style={{ marginTop: 0 }}>Inputs (Target Salary ➔ Client Rate)</h3>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Target Monthly Salary (€):
-                    <input type="number" value={targetMonthlySalary} onChange={(e) => setTargetMonthlySalary(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" value={targetMonthlySalary} onChange={(e) => setTargetMonthlySalary(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Travel Costs (Hourly €):
-                    <input type="number" value={travelCostsHourly} onChange={(e) => setTravelCostsHourly(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" value={travelCostsHourly} onChange={(e) => setTravelCostsHourly(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Desired Margin (€):
-                    <input type="number" value={desiredMargin} onChange={(e) => setDesiredMargin(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" value={desiredMargin} onChange={(e) => setDesiredMargin(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Cost Price Factor:
-                    <input type="number" step="0.1" value={costFactor} onChange={(e) => setCostFactor(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" step="0.1" value={costFactor} onChange={(e) => setCostFactor(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Workweek (Hours):
-                    <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                 </section>
-                <section style={{ background: theme.sidebarBg, padding: '1.5rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                <section style={{ background: 'var(--glass-header-bg)', padding: '1.5rem', border: `1px solid ${'var(--glass-border)'}`, borderRadius: '8px' }}>
                   <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
                   <p><strong>1. Gross Weekly Salary:</strong> (€{targetMonthlySalary} × 3) / 13 = €{((targetMonthlySalary * 3) / 13).toFixed(2)} / week</p>
                   <p><strong>2. Gross Hourly Wage:</strong> €{((targetMonthlySalary * 3) / 13).toFixed(2)} / {hoursPerWeek} hours = €{(((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)}</p>
@@ -415,26 +415,26 @@ export default function App() {
               </>
             ) : (
               <>
-                <section style={{ border: `1px solid ${theme.borderColor}`, background: theme.cardBg, padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
+                <section style={{ border: `1px solid ${'var(--glass-border)'}`, background: 'var(--glass-bg)', padding: '1.5rem', marginBottom: '2rem', borderRadius: '8px' }}>
                   <h3 style={{ marginTop: 0 }}>Inputs (Budget ➔ Salary)</h3>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Max Client Budget/Rate (€):
-                    <input type="number" value={maxClientRate} onChange={(e) => setMaxClientRate(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" value={maxClientRate} onChange={(e) => setMaxClientRate(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Desired Margin (€):
-                    <input type="number" value={desiredMargin} onChange={(e) => setDesiredMargin(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" value={desiredMargin} onChange={(e) => setDesiredMargin(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Cost Price Factor:
-                    <input type="number" step="0.1" value={costFactor} onChange={(e) => setCostFactor(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" step="0.1" value={costFactor} onChange={(e) => setCostFactor(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                   <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
                     Workweek (Hours):
-                    <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: theme.inputBg, color: theme.inputText, border: `1px solid ${theme.borderColor}`, padding: '4px', width: '120px' }} />
+                    <input type="number" value={hoursPerWeek} onChange={(e) => setHoursPerWeek(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: `1px solid ${'var(--glass-border)'}`, padding: '4px', width: '120px' }} />
                   </label>
                 </section>
-                <section style={{ background: theme.sidebarBg, padding: '1.5rem', border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                <section style={{ background: 'var(--glass-header-bg)', padding: '1.5rem', border: `1px solid ${'var(--glass-border)'}`, borderRadius: '8px' }}>
                   <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
                   <p><strong>1. Target Cost Price:</strong> €{maxClientRate} - €{desiredMargin} margin = €{(maxClientRate - desiredMargin).toFixed(2)} / hour</p>
                   <p><strong>2. Gross Hourly Wage:</strong> €{(maxClientRate - desiredMargin).toFixed(2)} / {costFactor} factor = €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)}</p>
@@ -464,7 +464,7 @@ export default function App() {
                   width: '100%',
                   padding: '16px',
                   backgroundColor: '#10b981',
-                  color: '#fff',
+                  color: 'white',
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '18px',

@@ -19,15 +19,15 @@ export default function CompaniesDirectory() {
   };
 
   if (loading) {
-    return <div style={{ textAlign: "center", padding: "40px", color: "#9ca3af" }}>Loading companies...</div>;
+    return <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>Loading companies...</div>;
   }
 
   const filtered = companies.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "#ffffff" }}>
+    <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "var(--text-color)" }}>
       <h1 className="text-gradient" style={{ margin: "0 0 16px 0" }}>🏢 Companies Directory</h1>
-      <p style={{ color: "#9ca3af", marginBottom: "24px" }}>
+      <p style={{ color: "var(--text-muted)", marginBottom: "24px" }}>
         Browse all the companies currently hiring on our platform.
       </p>
 
@@ -40,11 +40,11 @@ export default function CompaniesDirectory() {
       />
 
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {filtered.length === 0 && <div style={{ padding: "20px", textAlign: "center", color: "#9ca3af" }}>No companies found.</div>}
+        {filtered.length === 0 && <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>No companies found.</div>}
         {filtered.map(company => (
-          <div key={company.id} style={{ padding: "20px", backgroundColor: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
+          <div key={company.id} style={{ padding: "20px", backgroundColor: "var(--glass-bg)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)" }}>
             <h2 style={{ margin: "0 0 8px 0", color: "#10b981", fontSize: "20px" }}>{company.name}</h2>
-            <p style={{ margin: 0, color: "#9ca3af", lineHeight: "1.5", fontSize: "14px" }}>
+            <p style={{ margin: 0, color: "var(--text-muted)", lineHeight: "1.5", fontSize: "14px" }}>
               {company.description || "No description provided."}
             </p>
           </div>

@@ -116,7 +116,7 @@ export default function CalendarFeature({ userId }: { userId: string }) {
   };
 
   return (
-    <div style={{ height: "70vh", backgroundColor: "rgba(255, 255, 255, 0.03)", color: "#111", padding: "20px", borderRadius: "8px", position: "relative" }}>
+    <div style={{ height: "70vh", backgroundColor: "var(--glass-bg)", color: "#111", padding: "20px", borderRadius: "8px", position: "relative" }}>
       <h2 className="text-gradient" style={{ marginTop: 0, marginBottom: "20px" }}>Schedule Interviews (Click an empty slot to propose)</h2>
       <Calendar
         localizer={localizer}
@@ -142,7 +142,7 @@ export default function CalendarFeature({ userId }: { userId: string }) {
           position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 10
         }}>
-          <div style={{ backgroundColor: "rgba(255, 255, 255, 0.03)", padding: "30px", borderRadius: "8px", width: "400px" }}>
+          <div style={{ backgroundColor: "var(--glass-bg)", padding: "30px", borderRadius: "8px", width: "400px" }}>
             <h3 style={{ marginTop: 0 }}>Propose Interview</h3>
             <p><strong>Time:</strong> {moment(selectedSlot.start).format("LLL")}</p>
             
