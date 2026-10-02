@@ -851,10 +851,18 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                 ? candidateCards.filter(c => c.home_city?.toLowerCase().includes(filterCity.toLowerCase())) 
                 : candidateCards;
 
+              if (candidateCards.length === 0) {
+                return (
+                  <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
+                    You have viewed all available candidates. Check back later!
+                  </div>
+                );
+              }
+
               if (filteredCandidates.length === 0) {
                 return (
                   <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
-                    No candidates match your current filters.
+                    No candidates match your current location filter.
                   </div>
                 );
               }
