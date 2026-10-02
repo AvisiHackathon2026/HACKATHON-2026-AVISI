@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import TinderCard from "react-tinder-card";
@@ -563,7 +563,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
   if (isNewUser) {
     return (
       <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px", fontFamily: "sans-serif", color: "var(--text-color)" }}>
-        <form onSubmit={handleCompleteOnboarding} style={{ backgroundColor: "var(--glass-bg)", padding: "30px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.1)", display: "flex", flexDirection: "column", gap: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
+        <form onSubmit={handleCompleteOnboarding} style={{ backgroundColor: "var(--glass-bg)", padding: "30px", borderRadius: "12px", border: "1px solid var(--glass-border)", display: "flex", flexDirection: "column", gap: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
           <h1 style={{ margin: 0, color: "var(--text-color)", fontSize: "24px" }}>Welcome to the Platform! 👋</h1>
           <p style={{ margin: 0, color: "var(--text-muted)" }}>Before you can start swiping, please set up your account. Your username will be permanently locked after saving.</p>
 
@@ -574,7 +574,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
               placeholder="e.g. dev_ninja"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", fontSize: "16px" }}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", fontSize: "16px" }}
               required
             />
             <span style={{ fontSize: "12px", color: "#ef4444", fontWeight: "bold" }}>Warning: This cannot be changed later.</span>
@@ -587,7 +587,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
               placeholder="John Doe"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", fontSize: "16px" }}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", fontSize: "16px" }}
               required
             />
           </div>
@@ -599,7 +599,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
               placeholder="Amsterdam"
               value={homeCity}
               onChange={(e) => setHomeCity(e.target.value)}
-              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
             />
           </div>
 
@@ -611,7 +611,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
               placeholder="e.g. 25"
               value={expectedSalary}
               onChange={(e) => setExpectedSalary(e.target.value)}
-              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
             />
           </div>
 
@@ -671,7 +671,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
           )}
 
           {activeTab === "edit_profile" ? (
-            <form onSubmit={handleSaveProfile} style={{ backgroundColor: "var(--glass-bg)", padding: "20px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.1)", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <form onSubmit={handleSaveProfile} style={{ backgroundColor: "var(--glass-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--glass-border)", display: "flex", flexDirection: "column", gap: "16px" }}>
               <h2 style={{ margin: 0 }}>Applicant Profile Setup</h2>
 
               {/* LOCKED USERNAME */}
@@ -681,7 +681,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   type="text"
                   value={username}
                   disabled
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "#6b7280", backgroundColor: "var(--glass-input-bg)", cursor: "not-allowed" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "#6b7280", backgroundColor: "var(--glass-input-bg)", cursor: "not-allowed" }}
                 />
                 <span style={{ fontSize: "12px", color: "#6b7280" }}>Usernames cannot be changed.</span>
               </div>
@@ -694,7 +694,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   placeholder="John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
                   required
                 />
               </div>
@@ -706,7 +706,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   placeholder="Amsterdam"
                   value={homeCity}
                   onChange={(e) => setHomeCity(e.target.value)}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
                   required
                 />
               </div>
@@ -719,7 +719,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   placeholder="e.g. 25"
                   value={expectedSalary}
                   onChange={(e) => setExpectedSalary(e.target.value)}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
                   required
                 />
               </div>
@@ -731,7 +731,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   value={motivation}
                   onChange={(e) => setMotivation(e.target.value)}
                   rows={4}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
                   required
                 />
               </div>
@@ -743,7 +743,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   placeholder="React, Next.js, Node, Design"
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
                 />
               </div>
 
@@ -754,7 +754,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   placeholder="BSc Computer Science, MIT"
                   value={education}
                   onChange={(e) => setEducation(e.target.value)}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
                 />
               </div>
 
@@ -765,7 +765,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   value={experience}
                   onChange={(e) => setExperience(e.target.value)}
                   rows={4}
-                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)" }}
                 />
               </div>
 
@@ -816,11 +816,8 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                     >
                       <div
                         style={{
-                          backgroundColor: "var(--glass-bg)",
-                          borderRadius: "16px",
-                          padding: "24px",
-                          boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
-                          border: "1px solid rgba(255, 255, 255, 0.1)",
+                          backgroundColor: "var(--bg-color)", borderRadius: "16px", padding: "24px", boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+                          border: "1px solid var(--glass-border)",
                           height: "380px",
                           display: "flex",
                           flexDirection: "column",
@@ -842,7 +839,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                             {job.description || "No description provided."}
                           </p>
                         </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px" }}>
+                        <div style={{ display: "flex", justifyContent: "center", gap: "30px", color: "var(--text-muted)", fontSize: "12px", borderTop: "1px solid var(--glass-border)", paddingTop: "12px" }}>
                           <span>👈 Swipe Left to Skip</span>
                           <span>Swipe Right to Apply 👉</span>
                         </div>
@@ -875,7 +872,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                         setSelectedJobContext(job);
                         loadCandidatesForRecruiter(userId, job.id);
                       }}
-                      style={{ padding: "20px", backgroundColor: "var(--glass-bg)", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.1)", cursor: "pointer", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", textAlign: "left", transition: "transform 0.2s" }}
+                      style={{ padding: "20px", backgroundColor: "var(--glass-bg)", borderRadius: "12px", border: "1px solid var(--glass-border)", cursor: "pointer", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", textAlign: "left", transition: "transform 0.2s" }}
                     >
                       <h3 style={{ margin: "0 0 10px 0", color: "var(--text-color)" }}>{job.title}</h3>
                       <p style={{ margin: 0, color: "#6b7280", fontSize: "14px", textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>{job.description}</p>
@@ -907,7 +904,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   placeholder="Filter by Location (e.g. London)" 
                   value={filterCity}
                   onChange={(e) => setFilterCity(e.target.value)}
-                  style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box" }}
+                  style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box" }}
                 />
               </div>
 
@@ -951,11 +948,8 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                   >
                     <div
                       style={{
-                        backgroundColor: "var(--glass-bg)",
-                        borderRadius: "16px",
-                        padding: "20px",
-                        boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        backgroundColor: "var(--bg-color)", borderRadius: "16px", padding: "20px", boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+                        border: "1px solid var(--glass-border)",
                         height: "420px",
                         display: "flex",
                         flexDirection: "column",
@@ -1046,7 +1040,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                         )}
                       </div>
 
-                      <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px", alignItems: "center" }}>
+                      <div style={{ display: "flex", justifyContent: "center", gap: "30px", color: "var(--text-muted)", fontSize: "12px", borderTop: "1px solid var(--glass-border)", paddingTop: "12px", alignItems: "center" }}>
                         <span>👈 Swipe Left to Pass</span>
                         
                         <button 
@@ -1076,14 +1070,14 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* Admin: Manage Users (Promote/Demote/Edit) */}
-          <div style={{ padding: "16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "8px", backgroundColor: "var(--glass-bg)", color: "var(--text-color)" }}>
+          <div style={{ padding: "16px", border: "1px solid var(--glass-border)", borderRadius: "8px", backgroundColor: "var(--glass-bg)", color: "var(--text-color)" }}>
             <h3 style={{ marginTop: 0 }}>Admin: User Management</h3>
             <input 
               type="text" 
               placeholder="Search all users by name or username..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "15px", boxSizing: "border-box", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "4px" }}
+              style={{ width: "100%", padding: "8px", marginBottom: "15px", boxSizing: "border-box", border: "1px solid var(--glass-border)", borderRadius: "4px" }}
             />
             
             <div style={{ maxHeight: "400px", overflowY: "auto", border: "1px solid #eee", borderRadius: "4px" }}>
@@ -1113,7 +1107,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                           setAdminEditUsername(user.username || "");
                           setAdminEditFullName(user.full_name || "");
                         }}
-                        style={{ padding: "4px 8px", backgroundColor: "var(--glass-input-bg)", color: "var(--text-color)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
+                        style={{ padding: "4px 8px", backgroundColor: "var(--glass-input-bg)", color: "var(--text-color)", border: "1px solid var(--glass-border)", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
                       >
                         ✏️ Force Edit Profile
                       </button>
@@ -1124,7 +1118,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                             if (e.target.value) handlePromoteToRecruiter(user.id, e.target.value);
                             e.target.value = ""; 
                           }}
-                          style={{ padding: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "4px", backgroundColor: "#10b981", color: "var(--text-color)", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}
+                          style={{ padding: "4px", border: "1px solid var(--glass-border)", borderRadius: "4px", backgroundColor: "#10b981", color: "var(--text-color)", fontWeight: "bold", cursor: "pointer", fontSize: "12px" }}
                         >
                           <option value="">Promote to Recruiter ▾</option>
                           {companies.map(c => (
@@ -1149,7 +1143,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
           </div>
 
           {/* Admin: Manage Jobs */}
-          <div style={{ padding: "16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "8px", backgroundColor: "var(--glass-bg)", color: "var(--text-color)" }}>
+          <div style={{ padding: "16px", border: "1px solid var(--glass-border)", borderRadius: "8px", backgroundColor: "var(--glass-bg)", color: "var(--text-color)" }}>
             <h3 style={{ marginTop: 0 }}>Admin: Manage Job Postings</h3>
             <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #eee", borderRadius: "4px" }}>
               {allJobs.length === 0 && <div style={{ padding: "10px" }}>No job postings found.</div>}
@@ -1172,33 +1166,33 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
             </div>
           </div>
 
-          <form onSubmit={handleCreateCompany} style={{ padding: "16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "8px", backgroundColor: "var(--glass-bg)" }}>
+          <form onSubmit={handleCreateCompany} style={{ padding: "16px", border: "1px solid var(--glass-border)", borderRadius: "8px", backgroundColor: "var(--glass-bg)" }}>
             <h3 style={{ marginTop: 0 }}>Admin: Add Company</h3>
             <input
               type="text"
               placeholder="Company Name"
               value={newCompanyName}
               onChange={(e) => setNewCompanyName(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid rgba(255, 255, 255, 0.1)" }}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
               required
             />
             <textarea
               placeholder="Company Description"
               value={newCompanyDesc}
               onChange={(e) => setNewCompanyDesc(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid rgba(255, 255, 255, 0.1)" }}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
             />
             <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", color: "var(--text-color)", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
               Add Company
             </button>
           </form>
 
-          <form onSubmit={handleCreateJob} style={{ padding: "16px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "8px", backgroundColor: "var(--glass-bg)" }}>
+          <form onSubmit={handleCreateJob} style={{ padding: "16px", border: "1px solid var(--glass-border)", borderRadius: "8px", backgroundColor: "var(--glass-bg)" }}>
             <h3 style={{ marginTop: 0 }}>Admin: Add Job Post</h3>
             <select
               value={selectedCompanyId}
               onChange={(e) => setSelectedCompanyId(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid rgba(255, 255, 255, 0.1)" }}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
               required
             >
               <option value="">-- Select Company --</option>
@@ -1213,7 +1207,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
               placeholder="Job Title"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid rgba(255, 255, 255, 0.1)" }}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
               required
             />
             <input
@@ -1221,13 +1215,13 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
               placeholder="Hourly Rate / Salary"
               value={jobRate}
               onChange={(e) => setJobRate(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid rgba(255, 255, 255, 0.1)" }}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
             />
             <textarea
               placeholder="Job Description"
               value={jobDesc}
               onChange={(e) => setJobDesc(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid rgba(255, 255, 255, 0.1)" }}
+              style={{ width: "100%", padding: "8px", marginBottom: "10px", boxSizing: "border-box", color: "var(--text-color)", backgroundColor: "var(--glass-bg)", border: "1px solid var(--glass-border)" }}
             />
             <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#10b981", color: "var(--text-color)", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
               Add Job Opening
@@ -1245,12 +1239,12 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
             
             <div style={{ marginBottom: "15px" }}>
               <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px", color: "var(--text-color)" }}>Username (Must be unique)</label>
-              <input type="text" value={adminEditUsername} onChange={(e) => setAdminEditUsername(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box" }} required />
+              <input type="text" value={adminEditUsername} onChange={(e) => setAdminEditUsername(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box" }} required />
             </div>
 
             <div style={{ marginBottom: "20px" }}>
               <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px", color: "var(--text-color)" }}>Full Name</label>
-              <input type="text" value={adminEditFullName} onChange={(e) => setAdminEditFullName(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid rgba(255, 255, 255, 0.1)", boxSizing: "border-box" }} required />
+              <input type="text" value={adminEditFullName} onChange={(e) => setAdminEditFullName(e.target.value)} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid var(--glass-border)", boxSizing: "border-box" }} required />
             </div>
 
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
