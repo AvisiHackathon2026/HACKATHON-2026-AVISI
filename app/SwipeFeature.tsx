@@ -345,13 +345,16 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     }
   };
 
-  // Admin: Create Job
+  // Admin & Recruiter: Create Job
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedCompanyId || !jobTitle) return;
+    
+    const targetCompanyId = profile?.role === "admin" ? selectedCompanyId : profile?.company_id;
+
+    if (!targetCompanyId || !jobTitle) return;
 
     await supabase.from("jobs").insert({
-      company_id: selectedCompanyId,
+      company_id: targetCompanyId,
       title: jobTitle,
       description: jobDesc,
       hourly_rate: jobRate,
@@ -765,117 +768,158 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       {/* RECRUITER VIEW: Candidate Cards */}
       {profile?.role === "recruiter" && (
         <div style={{ textAlign: "center" }}>
-          <h2>Swipe Applicants</h2>
-          <div style={{ position: "relative", width: "100%", height: "480px", marginTop: "20px" }}>
-            {candidateCards.length === 0 ? (
-              <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
-                No candidate cards available to swipe right now.
+          
+          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+            <button
+              onClick={() => setActiveTab("swipe")}
+              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "swipe" ? "#111827" : "#e5e7eb", color: activeTab === "swipe" ? "#fff" : "#374151", fontWeight: "bold" }}
+            >
+              👥 Swipe Applicants
+            </button>
+            <button
+              onClick={() => setActiveTab("edit_profile")}
+              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "edit_profile" ? "#111827" : "#e5e7eb", color: activeTab === "edit_profile" ? "#fff" : "#374151", fontWeight: "bold" }}
+            >
+              ➕ Post a Job
+            </button>
+          </div>
+
+          {activeTab === "edit_profile" ? (
+             <form onSubmit={handleCreateJob} style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "12px", border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "16px", textAlign: "left" }}>
+              <h2 style={{ margin: 0 }}>Create a New Job Listing</h2>
+              {!profile.company_id && <p style={{ color: "#ef4444", fontWeight: "bold" }}>Error: You must be assigned to a company by an Admin before posting jobs.</p>}
+              
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Job Title</label>
+                <input type="text" placeholder="e.g. Senior React Developer" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }} required disabled={!profile.company_id} />
               </div>
-            ) : (
-              candidateCards.map((candidate) => (
-                <TinderCard
-                  key={candidate.id}
-                  onSwipe={(dir) => handleSwipe(dir, candidate.id, candidate)}
-                  preventSwipe={["up", "down"]}
-                  className="absolute-card"
-                >
-                  <div
-                    style={{
-                      backgroundColor: "#ffffff",
-                      borderRadius: "16px",
-                      padding: "20px",
-                      boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
-                      border: "1px solid #e5e7eb",
-                      height: "420px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      textAlign: "left",
-                      userSelect: "none",
-                      cursor: "grab",
-                    }}
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Hourly Rate</label>
+                <input type="number" max="999" placeholder="e.g. 50" value={jobRate} onChange={(e) => setJobRate(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }} disabled={!profile.company_id} />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Job Description</label>
+                <textarea placeholder="Describe the role and requirements..." value={jobDesc} onChange={(e) => setJobDesc(e.target.value)} rows={4} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }} required disabled={!profile.company_id} />
+              </div>
+
+              <button type="submit" style={{ padding: "12px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: profile.company_id ? "pointer" : "not-allowed", opacity: profile.company_id ? 1 : 0.5 }}>
+                Post Job Opening
+              </button>
+            </form>
+          ) : (
+            <div style={{ position: "relative", width: "100%", height: "480px", marginTop: "20px" }}>
+              {candidateCards.length === 0 ? (
+                <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
+                  No candidate cards available to swipe right now.
+                </div>
+              ) : (
+                candidateCards.map((candidate) => (
+                  <TinderCard
+                    key={candidate.id}
+                    onSwipe={(dir) => handleSwipe(dir, candidate.id, candidate)}
+                    preventSwipe={["up", "down"]}
+                    className="absolute-card"
                   >
-                    <div>
-                      {/* Header with Photo, Name & City */}
-                      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
-                        <div
-                          style={{
-                            width: "64px",
-                            height: "64px",
-                            borderRadius: "50%",
-                            backgroundColor: "#e5e7eb",
-                            backgroundImage: candidate.profile_picture_url ? `url(${candidate.profile_picture_url})` : "none",
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                            flexShrink: 0,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "24px",
-                          }}
-                        >
-                          {!candidate.profile_picture_url && "👤"}
+                    <div
+                      style={{
+                        backgroundColor: "#ffffff",
+                        borderRadius: "16px",
+                        padding: "20px",
+                        boxShadow: "0 10px 25px rgba(0,0,0,0.12)",
+                        border: "1px solid #e5e7eb",
+                        height: "420px",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        textAlign: "left",
+                        userSelect: "none",
+                        cursor: "grab",
+                      }}
+                    >
+                      <div>
+                        {/* Header with Photo, Name & City */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+                          <div
+                            style={{
+                              width: "64px",
+                              height: "64px",
+                              borderRadius: "50%",
+                              backgroundColor: "#e5e7eb",
+                              backgroundImage: candidate.profile_picture_url ? `url(${candidate.profile_picture_url})` : "none",
+                              backgroundSize: "cover",
+                              backgroundPosition: "center",
+                              flexShrink: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "24px",
+                            }}
+                          >
+                            {!candidate.profile_picture_url && "👤"}
+                          </div>
+                          <div>
+                            <h2 style={{ margin: 0, fontSize: "20px", color: "#111827" }}>
+                              {candidate.full_name || "Unnamed Applicant"}
+                            </h2>
+                            <p style={{ margin: "2px 0 0 0", color: "#6b7280", fontSize: "14px" }}>
+                              @{candidate.username || "unknown"} • 📍 {candidate.home_city || "Location unspecified"}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h2 style={{ margin: 0, fontSize: "20px", color: "#111827" }}>
-                            {candidate.full_name || "Unnamed Applicant"}
-                          </h2>
-                          <p style={{ margin: "2px 0 0 0", color: "#6b7280", fontSize: "14px" }}>
-                            @{candidate.username || "unknown"} • 📍 {candidate.home_city || "Location unspecified"}
+
+                        {/* Hourly Expectations */}
+                        <div style={{ marginBottom: "10px" }}>
+                          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151" }}>Expected Salary: </span>
+                          <span style={{ fontSize: "14px", color: "#059669", fontWeight: "bold" }}>
+                            {candidate.expected_salary || "Negotiable"}
+                          </span>
+                        </div>
+
+                        {/* Motivation */}
+                        <div style={{ marginBottom: "12px" }}>
+                          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151", display: "block" }}>Motivation:</span>
+                          <p style={{ margin: "4px 0", color: "#4b5563", fontSize: "13px", lineHeight: "1.4", maxHeight: "110px", overflow: "hidden" }}>
+                            "{candidate.motivation || "No motivation statement provided."}"
                           </p>
                         </div>
+
+                        {/* CV Link */}
+                        {candidate.cv_url && (
+                          <a
+                            href={candidate.cv_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: "inline-block", color: "#2563eb", textDecoration: "underline", fontSize: "14px", fontWeight: "bold" }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            📄 View Candidate CV Document
+                          </a>
+                        )}
                       </div>
 
-                      {/* Hourly Expectations */}
-                      <div style={{ marginBottom: "10px" }}>
-                        <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151" }}>Expected Salary: </span>
-                        <span style={{ fontSize: "14px", color: "#059669", fontWeight: "bold" }}>
-                          {candidate.expected_salary || "Negotiable"}
-                        </span>
-                      </div>
-
-                      {/* Motivation */}
-                      <div style={{ marginBottom: "12px" }}>
-                        <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151", display: "block" }}>Motivation:</span>
-                        <p style={{ margin: "4px 0", color: "#4b5563", fontSize: "13px", lineHeight: "1.4", maxHeight: "110px", overflow: "hidden" }}>
-                          "{candidate.motivation || "No motivation statement provided."}"
-                        </p>
-                      </div>
-
-                      {/* CV Link */}
-                      {candidate.cv_url && (
-                        <a
-                          href={candidate.cv_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ display: "inline-block", color: "#2563eb", textDecoration: "underline", fontSize: "14px", fontWeight: "bold" }}
-                          onClick={(e) => e.stopPropagation()}
+                      <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px", alignItems: "center" }}>
+                        <span>👈 Swipe Left to Pass</span>
+                        
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDirectMessage(candidate.id);
+                          }}
+                          style={{ padding: "6px 12px", backgroundColor: "#3b82f6", color: "#fff", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "bold" }}
                         >
-                          📄 View Candidate CV Document
-                        </a>
-                      )}
-                    </div>
+                          💬 Direct Message
+                        </button>
 
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px", alignItems: "center" }}>
-                      <span>👈 Swipe Left to Pass</span>
-                      
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDirectMessage(candidate.id);
-                        }}
-                        style={{ padding: "6px 12px", backgroundColor: "#3b82f6", color: "#fff", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "bold" }}
-                      >
-                        💬 Direct Message
-                      </button>
-
-                      <span>Swipe Right to Connect 👉</span>
+                        <span>Swipe Right to Connect 👉</span>
+                      </div>
                     </div>
-                  </div>
-                </TinderCard>
-              ))
-            )}
-          </div>
+                  </TinderCard>
+                ))
+              )}
+            </div>
+          )}
         </div>
       )}
 
