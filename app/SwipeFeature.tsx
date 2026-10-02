@@ -100,8 +100,8 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     } else if (assignedRole === "recruiter") {
       await loadCandidatesForRecruiter(userProfile.id);
     } else if (assignedRole === "admin") {
-      // Admin superpower: Fetch all unemployed users to manage them
-      const { data: usersList } = await supabase.from("profiles").select("*").eq("role", "unemployed");
+      // Admin superpower: Fetch all users (except themselves) to manage them
+      const { data: usersList } = await supabase.from("profiles").select("*").neq("id", userProfile.id);
       if (usersList) setAllUsers(usersList);
     }
 
@@ -152,6 +152,16 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
 
     await supabase.from("profiles").update({ role: "recruiter", company_id: companyId }).eq("id", userIdToPromote);
     alert("User successfully promoted to Recruiter!");
+    fetchProfileAndData(); // Refresh the list
+  };
+
+  // Admin Action: Demote User to Unemployed
+  const handleDemoteToUnemployed = async (userIdToDemote: string) => {
+    const confirm = window.confirm("Are you sure you want to demote this Recruiter back to Unemployed?");
+    if (!confirm) return;
+
+    await supabase.from("profiles").update({ role: "unemployed", company_id: null }).eq("id", userIdToDemote);
+    alert("User successfully demoted!");
     fetchProfileAndData(); // Refresh the list
   };
 
@@ -612,19 +622,19 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       {profile?.role === "admin" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
-          {/* Admin: Manage Users (Promote to Recruiter) */}
+          {/* Admin: Manage Users (Promote/Demote) */}
           <div style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff", color: "#111" }}>
             <h3 style={{ marginTop: 0 }}>Admin: User Management</h3>
             <input 
               type="text" 
-              placeholder="Search unemployed users by name or city..."
+              placeholder="Search all users by name or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ width: "100%", padding: "8px", marginBottom: "15px", boxSizing: "border-box", border: "1px solid #ccc", borderRadius: "4px" }}
             />
             
             <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #eee", borderRadius: "4px" }}>
-              {allUsers.length === 0 && <div style={{ padding: "10px" }}>No unemployed users found.</div>}
+              {allUsers.length === 0 && <div style={{ padding: "10px" }}>No users found.</div>}
               {allUsers
                 .filter(u => 
                   (u.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -633,22 +643,38 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
                 .map(user => (
                   <div key={user.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px", borderBottom: "1px solid #eee" }}>
                     <div>
-                      <strong>{user.full_name || "Anonymous User"}</strong>
+                      <strong>{user.full_name || "New Account (No Name Yet)"}</strong>
+                      <span style={{ marginLeft: "8px", fontSize: "12px", fontWeight: "bold", color: user.role === 'recruiter' ? '#3b82f6' : '#6b7280' }}>
+                        [{user.role.toUpperCase()}]
+                      </span>
                       <div style={{ fontSize: "12px", color: "#666" }}>{user.home_city || "No city specified"}</div>
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
-                      <select 
-                        onChange={(e) => {
-                          if (e.target.value) handlePromoteToRecruiter(user.id, e.target.value);
-                          e.target.value = ""; // Reset dropdown after action
-                        }}
-                        style={{ padding: "6px", border: "1px solid #ccc", borderRadius: "4px", backgroundColor: "#10b981", color: "#fff", fontWeight: "bold", cursor: "pointer" }}
-                      >
-                        <option value="">Promote to Recruiter ▾</option>
-                        {companies.map(c => (
-                          <option key={c.id} value={c.id}>Assign to {c.name}</option>
-                        ))}
-                      </select>
+                      
+                      {user.role === "unemployed" && (
+                        <select 
+                          onChange={(e) => {
+                            if (e.target.value) handlePromoteToRecruiter(user.id, e.target.value);
+                            e.target.value = ""; // Reset dropdown after action
+                          }}
+                          style={{ padding: "6px", border: "1px solid #ccc", borderRadius: "4px", backgroundColor: "#10b981", color: "#fff", fontWeight: "bold", cursor: "pointer" }}
+                        >
+                          <option value="">Promote to Recruiter ▾</option>
+                          {companies.map(c => (
+                            <option key={c.id} value={c.id}>Assign to {c.name}</option>
+                          ))}
+                        </select>
+                      )}
+
+                      {user.role === "recruiter" && (
+                        <button 
+                          onClick={() => handleDemoteToUnemployed(user.id)}
+                          style={{ padding: "6px 12px", backgroundColor: "#ef4444", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                        >
+                          Demote to Unemployed
+                        </button>
+                      )}
+
                     </div>
                   </div>
               ))}
