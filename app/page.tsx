@@ -225,7 +225,7 @@ export default function App() {
 
   // --- UI: LOGGED IN (APP LAYOUT) ---
   return (
-    <div className="grid-background" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', color: theme.text, position: 'relative', overflow: 'hidden' }}>
+    <div className={isDarkMode ? "grid-background" : "grid-background light-mode"} style={{ display: "flex", minHeight: "100vh", fontFamily: "sans-serif", position: "relative", overflow: "hidden" }}>
       
       {/* SIDEBAR */}
       <nav className="glass-card" style={{ position: 'relative', zIndex: 10, width: '250px', borderRight: `1px solid ${theme.borderColor}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
@@ -254,7 +254,7 @@ export default function App() {
 
         {/* ADMIN: Admin Panel / EVERYONE ELSE: Find Matches */}
         <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
-          {userRole === 'admin' ? '⚙️ Admin Panel' : '🔥 Find Matches'}
+          {userRole === 'admin' ? '⚙️ Admin Panel' : '🔥 Swipe Deck'}
         </button>
 
         {/* SHARED: Chat & Calendar */}
@@ -270,7 +270,7 @@ export default function App() {
           🏢 Companies
         </button>
         
-        <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "15px", marginTop: "15px" }}><span style={{ fontSize: "0.9rem", color: "var(--text-color)", fontWeight: "bold" }}>Dark Mode</span><div onClick={() => { const newMode = !isDarkMode; setIsDarkMode(newMode); supabase.auth.updateUser({ data: { dark_mode: newMode } }); }} style={{ width: "50px", height: "28px", background: isDarkMode ? "#10b981" : "var(--glass-border)", borderRadius: "30px", position: "relative", cursor: "pointer", transition: "background 0.3s" }}><div style={{ position: "absolute", top: "2px", left: isDarkMode ? "24px" : "2px", width: "24px", height: "24px", background: "white", borderRadius: "50%", transition: "left 0.3s", boxShadow: "0 2px 4px rgba(0,0,0,0.2)" }} /></div></div><button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold' }}>
           Sign Out
         </button>
       </nav>
