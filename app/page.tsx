@@ -6,12 +6,13 @@ import SwipeFeature from "./SwipeFeature";
 import ChatFeature from "./ChatFeature";
 import CalendarFeature from "./CalendarFeature";
 import CompaniesDirectory from "./CompaniesDirectory";
+import JobApplicationTracker from "./JobApplicationTracker";
 import CompanyDashboardFeature from "./CompanyDashboardFeature";
 
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'my_profile' | 'swipe' | 'chat' | 'calendar' | 'companies' | 'company_dashboard'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'my_profile' | 'swipe' | 'chat' | 'calendar' | 'companies' | 'company_dashboard' | 'applications'>('home');
   const [negotiationMatchId, setNegotiationMatchId] = useState<string | null>(null);
 
   
@@ -511,6 +512,13 @@ export default function App() {
         {currentView === 'calendar' && (
           <div style={{ width: '100%', height: '100%' }}>
             <CalendarFeature userId={session.user.id} />
+          </div>
+        )}
+
+                {/* VIEW: JOB APPLICATIONS */}
+        {currentView === 'applications' && (
+          <div style={{ width: '100%', height: '100%', maxWidth: '800px', margin: '0 auto' }}>
+            <JobApplicationTracker userId={session.user.id} />
           </div>
         )}
 

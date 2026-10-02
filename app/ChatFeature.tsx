@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import JobApplicationModal from './JobApplicationModal';
 
 interface ChatFeatureProps {
   userId: string;
@@ -13,6 +14,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [myRole, setMyRole] = useState<string>("unemployed");
   const [myCompanyId, setMyCompanyId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -180,7 +182,15 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
             <div style={{ padding: "15px", borderBottom: "1px solid rgba(255,255,255,0.1)", backgroundColor: "var(--glass-input-bg)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontWeight: "bold", color: "var(--text-color)" }}>Chatting with {selectedMatch.otherUser.full_name}</div>
               
-              <div style={{ display: "flex", gap: "10px" }}>
+                              <div style={{ display: "flex", gap: "10px" }}>
+                  {myRole === 'unemployed' && (
+                    <button 
+                      onClick={() => setIsApplyModalOpen(true)}
+                      style={{ padding: '6px 12px', backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                    >
+                      Apply
+                    </button>
+                  )}
                 {myRole === "recruiter" && !isLocked && (
                   <>
                     <button 
@@ -324,8 +334,17 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
             </form>
           </>
         )}
-      </div>
-
+            {isApplyModalOpen && (
+        <JobApplicationModal 
+          userId={userId} 
+          defaultCompany={selectedMatch?.companies?.name || ""} 
+          onClose={() => setIsApplyModalOpen(false)} 
+          onSuccess={() => {
+            sendRawMessage("[SYSTEM_APPLICATION_SUBMITTED]");
+          }} 
+        />
+      )}
+    </div>
     </div>
   );
 }
