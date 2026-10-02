@@ -31,6 +31,7 @@ export default function App() {
   const [targetMonthlySalary, setTargetMonthlySalary] = useState<number>(3000);
   const [travelCostsHourly, setTravelCostsHourly] = useState<number>(0);
   const [maxClientRate, setMaxClientRate] = useState<number>(120);
+  const [targetClientRate, setTargetClientRate] = useState<number>(100);
   const [desiredMargin, setDesiredMargin] = useState<number>(10);
   const [costFactor, setCostFactor] = useState<number>(2.0);
   const [hoursPerWeek, setHoursPerWeek] = useState<number>(40);
@@ -241,9 +242,7 @@ export default function App() {
 
         {/* ADMIN & RECRUITER ONLY: Calculator */}
         {(userRole === 'admin' || userRole === 'recruiter') && (
-          <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
-            Calculator
-          </button>
+          <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? 'var(--glass-border)' : 'transparent', color: 'var(--text-color)', border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}> 🧮 Calculator</button>
         )}
 
         {/* UNEMPLOYED ONLY: My Profile (Will be merged into My Profile later, keeping for compatibility now) */}
@@ -288,9 +287,7 @@ export default function App() {
               
               {/* ADMIN & RECRUITER ONLY */}
               {(userRole === 'admin' || userRole === 'recruiter') && (
-                <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
-                  Calculator
-                </button>
+                <button className="glass-card glass-button" onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}> 🧮 Calculator</button>
               )}
 
               {/* UNEMPLOYED ONLY */}
@@ -407,12 +404,37 @@ export default function App() {
                 </section>
                 <section style={{ background: 'var(--glass-header-bg)', padding: '1.5rem', border: `1px solid ${'var(--glass-border)'}`, borderRadius: '8px' }}>
                   <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
+                    <p><strong>0. All-in Tarief Opdrachtgever:</strong> €{maxClientRate.toFixed(2)} (Geaccepteerd Budget)</p>
                   <p><strong>1. Gross Weekly Salary:</strong> (€{targetMonthlySalary} × 3) / 13 = €{((targetMonthlySalary * 3) / 13).toFixed(2)} / week</p>
                   <p><strong>2. Gross Hourly Wage:</strong> €{((targetMonthlySalary * 3) / 13).toFixed(2)} / {hoursPerWeek} hours = €{(((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)}</p>
                   <p><strong>3. Cost Price:</strong> €{(((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)} × {costFactor} factor = €{((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor).toFixed(2)}</p>
                   <p><strong>4. All-in Cost:</strong> €{((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor).toFixed(2)} + €{travelCostsHourly} travel = €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)}</p>
-                  <p><strong>5. Final Client Rate:</strong> €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)} + €{desiredMargin} margin = <strong>€{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}</strong></p>
-                </section>
+                                      <p><strong>5. Final Client Rate:</strong> €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)} + €{desiredMargin} margin = <strong>€{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}</strong></p>
+                  </section>
+                  
+                  {/* SCENARIO ANALYSIS */}
+                  <section style={{ background: 'var(--glass-bg)', padding: '1.5rem', border: '1px solid var(--glass-border)', borderRadius: '8px', marginTop: '20px' }}>
+                    <h3 style={{ marginTop: 0 }}>Scenario & Afwijking Analysis</h3>
+                    <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
+                      Richt Tarief Opdrachtgever (€):
+                      <input type="number" value={targetClientRate} onChange={(e) => setTargetClientRate(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: '1px solid var(--glass-border)', padding: '4px', width: '120px' }} />
+                    </label>
+                    <p>
+                      <strong>Berekend All-in Tarief:</strong> €{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}
+                      <span style={{ color: (((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate) > 0 ? '#ef4444' : '#10b981', marginLeft: '10px' }}>
+                        ({(((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate) > 0 ? '+' : ''}{(((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate).toFixed(2)} afwijking)
+                      </span>
+                    </p>
+                    <div style={{ marginTop: '15px', padding: '10px', background: 'var(--glass-input-bg)', borderRadius: '6px' }}>
+                      <h4 style={{ margin: '0 0 10px 0' }}>Salaris mogelijkheden (op basis van Richt Tarief)</h4>
+                      <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6' }}>
+                        <li>Huidige marge (€{desiredMargin}): Max Salaris = <strong>€{((((targetClientRate - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                        <li>Nieuwe marge (€15): Max Salaris = <strong>€{((((targetClientRate - 15) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                        <li>90% Richt Tarief (€{(targetClientRate * 0.9).toFixed(2)}): Max Salaris = <strong>€{(((((targetClientRate * 0.9) - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                        <li>110% Richt Tarief (€{(targetClientRate * 1.1).toFixed(2)}): Max Salaris = <strong>€{(((((targetClientRate * 1.1) - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                      </ul>
+                    </div>
+                  </section>
               </>
             ) : (
               <>

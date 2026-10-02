@@ -109,7 +109,7 @@ export default function CompanyDashboardFeature({ userId }: { userId: string }) 
                 <div key={job.id} style={{ padding: "20px", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "12px", backgroundColor: "rgba(255, 255, 255, 0.03)", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
                     <div>
-                      <h3 style={{ margin: "0 0 5px 0", color: "#ffffff", fontSize: "20px" }}>{job.title}</h3>
+                      <h3 style={{ margin: "0 0 5px 0", color: "var(--text-color)", fontSize: "20px" }}>{job.title}</h3>
                       <span style={{ color: "#059669", fontWeight: "bold", backgroundColor: "#d1fae5", padding: "4px 8px", borderRadius: "4px", fontSize: "14px" }}>
                         €{job.hourly_rate || "N/A"}/hr Budget
                       </span>
@@ -129,8 +129,8 @@ export default function CompanyDashboardFeature({ userId }: { userId: string }) 
                       <div style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "10px" }}>
                         {recommendedCandidates[job.id].map(candidate => (
                           <div key={candidate.id} style={{ minWidth: "200px", padding: "12px", backgroundColor: "rgba(0, 0, 0, 0.2)", border: "1px solid rgba(255, 255, 255, 0.1)", borderRadius: "8px" }}>
-                            <div style={{ fontWeight: "bold", color: "#ffffff" }}>{candidate.full_name || "Anonymous"}</div>
-                            <div style={{ fontSize: "12px", color: "#6b7280", margin: "4px 0" }}>Expected: €{candidate.expected_salary || "N/A"}/hr</div>
+                            <div style={{ fontWeight: "bold", color: "var(--text-color)" }}>{candidate.full_name || "Anonymous"}</div>
+                            <div style={{ fontSize: "12px", color: "var(--text-muted)", margin: "4px 0" }}>Expected: €{candidate.expected_salary || "N/A"}/hr</div>
                             <div style={{ fontSize: "12px", color: "#3b82f6", fontWeight: "bold" }}>{candidate.skills ? candidate.skills.substring(0, 30) + '...' : 'No skills listed'}</div>
                           </div>
                         ))}
@@ -145,25 +145,25 @@ export default function CompanyDashboardFeature({ userId }: { userId: string }) 
 
         {/* RIGHT COLUMN: POST NEW JOB */}
         <div style={{ flex: 1, minWidth: "300px" }}>
-          <form onSubmit={handleCreateJob} style={{ backgroundColor: "#f8fafc", padding: "20px", borderRadius: "12px", border: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
-            <h2 style={{ margin: 0, color: "#1e293b" }}>➕ Post New Job</h2>
+          <form onSubmit={handleCreateJob} style={{ backgroundColor: "var(--glass-bg)", padding: "20px", borderRadius: "12px", border: "1px solid var(--glass-border)", display: "flex", flexDirection: "column", gap: "16px", position: "sticky", top: "20px" }}>
+            <h2 style={{ margin: 0, color: "var(--text-color)" }}>➕ Post New Job</h2>
             
             <div>
               <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px", color: "#334155" }}>Job Title</label>
-              <input type="text" placeholder="e.g. Senior React Developer" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box", color: "#0f172a" }} required />
+              <input type="text" placeholder="e.g. Senior React Developer" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "#0f172a" }} required />
             </div>
 
             <div>
               <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px", color: "#334155" }}>Hourly Budget (€)</label>
-              <input type="number" max="999" placeholder="e.g. 50" value={jobRate} onChange={(e) => setJobRate(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box", color: "#0f172a" }} />
+              <input type="number" max="999" placeholder="e.g. 50" value={jobRate} onChange={(e) => setJobRate(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "#0f172a" }} />
             </div>
 
             <div>
               <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px", color: "#334155" }}>Job Description</label>
-              <textarea placeholder="Describe the role and requirements..." value={jobDesc} onChange={(e) => setJobDesc(e.target.value)} rows={5} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1", boxSizing: "border-box", color: "#0f172a" }} required />
+              <textarea placeholder="Describe the role and requirements..." value={jobDesc} onChange={(e) => setJobDesc(e.target.value)} rows={5} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--glass-border)", boxSizing: "border-box", color: "#0f172a" }} required />
             </div>
 
-            <button type="submit" style={{ padding: "12px", backgroundColor: "#10b981", color: "#ffffff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", fontSize: "16px", boxShadow: "0 4px 6px rgba(16, 185, 129, 0.2)" }}>
+            <button type="submit" style={{ padding: "12px", backgroundColor: "#10b981", color: "var(--text-color)", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: "pointer", fontSize: "16px", boxShadow: "0 4px 6px rgba(16, 185, 129, 0.2)" }}>
               Post Job Opening
             </button>
           </form>
