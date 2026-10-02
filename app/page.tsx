@@ -40,6 +40,8 @@ export default function App() {
   const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
 
   // --- INITIAL LOAD ---
+  const [userRole, setUserRole] = useState<'admin' | 'recruiter' | 'unemployed' | 'employed' | null>(null);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -57,11 +59,25 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadUserData = (user: any) => {
+  const loadUserData = async (user: any) => {
     if (user && user.user_metadata) {
       setFullName(user.user_metadata.full_name || "");
       setCompany(user.user_metadata.company || "");
       if (user.user_metadata.dark_mode === true) setIsDarkMode(true);
+
+      // RBAC: Fetch User Role
+      if (user.email === "sietsekarsai@gmail.com") {
+        setUserRole("admin");
+      } else {
+        const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+        if (data) {
+          setUserRole(data.role);
+        } else {
+          setUserRole("unemployed");
+        }
+      }
+    } else {
+      setUserRole(null);
     }
   };
 
@@ -211,27 +227,46 @@ export default function App() {
       <nav style={{ width: '250px', background: theme.sidebarBg, borderRight: `1px solid ${theme.borderColor}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
         <h2 style={{ marginTop: 0, marginBottom: '2rem' }}>Recruiter App</h2>
         
-        <button onClick={() => setCurrentView('account')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'account' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'account' ? 'bold' : 'normal', borderRadius: '4px' }}>
-          ⚙️ Edit Account
-        </button>
+        {/* SHARED: My Profile / Edit Account */}
+        {userRole !== 'admin' && (
+          <button onClick={() => setCurrentView('account')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'account' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'account' ? 'bold' : 'normal', borderRadius: '4px' }}>
+            👤 My Profile
+          </button>
+        )}
+
+        {/* SHARED: Dashboard */}
         <button onClick={() => setCurrentView('home')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'home' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'home' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🏠 Dashboard
         </button>
-        <button onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
-          🧮 Calculator
-        </button>
-        <button onClick={() => setCurrentView('cv')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'cv' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'cv' ? 'bold' : 'normal', borderRadius: '4px' }}>
-          📄 Upload CV
-        </button>
+
+        {/* ADMIN & RECRUITER ONLY: Calculator */}
+        {(userRole === 'admin' || userRole === 'recruiter') && (
+          <button onClick={() => setCurrentView('calculator')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calculator' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calculator' ? 'bold' : 'normal', borderRadius: '4px' }}>
+            🧮 Calculator
+          </button>
+        )}
+
+        {/* UNEMPLOYED ONLY: Upload CV (Will be merged into My Profile later, keeping for compatibility now) */}
+        {userRole === 'unemployed' && (
+          <button onClick={() => setCurrentView('cv')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'cv' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'cv' ? 'bold' : 'normal', borderRadius: '4px' }}>
+            📄 Upload CV
+          </button>
+        )}
+
+        {/* ADMIN: Admin Panel / EVERYONE ELSE: Find Matches */}
         <button onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
-          🔥 Find Matches
+          {userRole === 'admin' ? '⚙️ Admin Panel' : '🔥 Find Matches'}
         </button>
+
+        {/* SHARED: Chat & Calendar */}
         <button onClick={() => setCurrentView('chat')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'chat' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'chat' ? 'bold' : 'normal', borderRadius: '4px' }}>
           💬 Chat
         </button>
         <button onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
           📅 Calendar
         </button>
+
+        {/* SHARED: Companies */}
         <button onClick={() => setCurrentView('companies')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'companies' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'companies' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🏢 Companies
         </button>
@@ -249,16 +284,48 @@ export default function App() {
           <div>
             <h1>Welcome back, {fullName || session.user.email}!</h1>
             <p>What would you like to do today?</p>
-            <div style={{ display: 'flex', gap: '20px', marginTop: '2rem' }}>
-              <button onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
-                🧮 Open Calculator
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginTop: '2rem' }}>
+              
+              {/* ADMIN & RECRUITER ONLY */}
+              {(userRole === 'admin' || userRole === 'recruiter') && (
+                <button onClick={() => setCurrentView('calculator')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  🧮 Calculator
+                </button>
+              )}
+
+              {/* UNEMPLOYED ONLY */}
+              {userRole === 'unemployed' && (
+                <>
+                  <button onClick={() => setCurrentView('cv')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                    📄 Upload CV
+                  </button>
+                  <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                    🔥 Find Matches
+                  </button>
+                </>
+              )}
+
+              {/* SHARED */}
+              <button onClick={() => setCurrentView('chat')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                💬 Chat
               </button>
-              <button onClick={() => setCurrentView('cv')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
-                📄 Upload Candidate CV
+              <button onClick={() => setCurrentView('calendar')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                📅 Calendar
               </button>
-              <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px', flex: 1 }}>
-                🔥 Find Matches
-              </button>
+              
+              {/* RECRUITER ONLY */}
+              {userRole === 'recruiter' && (
+                <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  🔥 Swipe Deck
+                </button>
+              )}
+
+              {/* ADMIN ONLY */}
+              {userRole === 'admin' && (
+                <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                  ⚙️ Admin Panel
+                </button>
+              )}
             </div>
           </div>
         )}
