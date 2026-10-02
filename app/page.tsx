@@ -11,6 +11,8 @@ export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
   const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe' | 'chat' | 'calendar' | 'companies'>('home');
+  const [negotiationMatchId, setNegotiationMatchId] = useState<string | null>(null);
+
   
   // Auth Form State
   const [email, setEmail] = useState("");
@@ -313,6 +315,35 @@ export default function App() {
               <p><strong>3. Gross Weekly Salary:</strong> €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)} / factor × {hoursPerWeek} hours = €{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)}</p>
               <p><strong>4. Max Monthly Salary:</strong> (€{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)} × 13) / 3 = <strong>€{((((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek) * 13 / 3).toFixed(2)}</strong></p>
             </section>
+            
+            {negotiationMatchId && (
+              <button
+                onClick={async () => {
+                  const wage = ((maxClientRate - desiredMargin) / costFactor).toFixed(2);
+                  await supabase.from("messages").insert({
+                    match_id: negotiationMatchId,
+                    sender_id: session.user.id,
+                    text: `[SALARY_PROPOSAL: ${wage}]`
+                  });
+                  setNegotiationMatchId(null);
+                  setCurrentView('chat');
+                }}
+                style={{
+                  marginTop: '20px',
+                  width: '100%',
+                  padding: '16px',
+                  backgroundColor: '#10b981',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                Send Proposal (€{((maxClientRate - desiredMargin) / costFactor).toFixed(2)}/hr) to Chat
+              </button>
+            )}
           </div>
         )}
 
@@ -376,7 +407,13 @@ export default function App() {
         {/* VIEW: CHAT (NEW) */}
         {currentView === 'chat' && (
           <div style={{ width: '100%', height: '100%' }}>
-            <ChatFeature userId={session.user.id} />
+            <ChatFeature 
+              userId={session.user.id} 
+              onGoToCalculator={(matchId: string) => {
+                setNegotiationMatchId(matchId);
+                setCurrentView('calculator');
+              }} 
+            />
           </div>
         )}
 
