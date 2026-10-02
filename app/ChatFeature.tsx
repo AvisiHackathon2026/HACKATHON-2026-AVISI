@@ -144,7 +144,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
     <div style={{ display: "flex", flex: 1, minHeight: "500px", height: "calc(100vh - 150px)", borderRadius: "8px", overflow: "hidden", color: "#ffffff", backgroundColor: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
       
       {/* MATCHES SIDEBAR */}
-      <div style={{ width: "300px", borderRight: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(0, 0, 0, 0.2)", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "300px", borderRight: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(0, 0, 0, 0.2)", display: "flex", flexDirection: "column", minHeight: 0 }}>
         <h3 style={{ padding: "15px", margin: 0, borderBottom: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(0, 0, 0, 0.3)" }}>Your Matches</h3>
         <div style={{ overflowY: "auto", flex: 1 }}>
           {matches.length === 0 ? (
@@ -169,7 +169,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
       </div>
 
       {/* CHAT AREA */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, minWidth: 0 }}>
         {!selectedMatch ? (
           <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", color: "#9ca3af" }}>
             Select a match to start chatting
