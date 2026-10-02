@@ -141,7 +141,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
   const canHire = isSalaryAccepted && isMeetingAccepted && myRole === "recruiter" && !isLocked;
 
   return (
-    <div className="glass-card" style={{ display: "flex", flex: 1, minHeight: "500px", height: "calc(100vh - 150px)", borderRadius: "8px", overflow: "hidden", color: "#ffffff" }}>
+    <div style={{ display: "flex", flex: 1, minHeight: "500px", height: "calc(100vh - 150px)", borderRadius: "8px", overflow: "hidden", color: "#ffffff", backgroundColor: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
       
       {/* MATCHES SIDEBAR */}
       <div style={{ width: "300px", borderRight: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(0, 0, 0, 0.2)", display: "flex", flexDirection: "column" }}>
@@ -218,9 +218,9 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
             )}
 
             {/* MESSAGES LIST */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "15px", backgroundColor: "#fcfcfc" }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: "15px", backgroundColor: "rgba(0,0,0,0.1)" }}>
               {messages.length === 0 ? (
-                <div style={{ textAlign: "center", color: "#aaa", marginTop: "20px" }}>No messages yet. Say hi!</div>
+                <div style={{ textAlign: "center", color: "#9ca3af", marginTop: "20px" }}>No messages yet. Say hi!</div>
               ) : (
                 messages.map((msg) => {
                   const isMine = msg.sender_id === userId;
@@ -230,8 +230,8 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                   if (content.startsWith("[SALARY_PROPOSAL:")) {
                     const amount = content.split(":")[1].replace("]", "").trim();
                     return (
-                      <div key={msg.id} style={{ margin: "15px 0", padding: "15px", border: "2px solid #3b82f6", borderRadius: "8px", backgroundColor: "#eff6ff", textAlign: "center" }}>
-                        <div style={{ fontSize: "16px", fontWeight: "bold", color: "#1e3a8a", marginBottom: "10px" }}>
+                      <div key={msg.id} style={{ margin: "15px 0", padding: "15px", border: "1px solid rgba(59, 130, 246, 0.5)", borderRadius: "8px", backgroundColor: "rgba(59, 130, 246, 0.1)", textAlign: "center" }}>
+                        <div style={{ fontSize: "16px", fontWeight: "bold", color: "#60a5fa", marginBottom: "10px" }}>
                           🧮 Salary Proposal: €{amount} / hr
                         </div>
                         {myRole === "unemployed" && !isSalaryAccepted && !isLocked && (
@@ -239,7 +239,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
                             Accept Offer
                           </button>
                         )}
-                        {isSalaryAccepted && <div style={{ color: "#10b981", fontWeight: "bold" }}>✅ Accepted</div>}
+                        {isSalaryAccepted && <div style={{ color: "#10b981", fontWeight: "bold" }}>✓ Accepted</div>}
                       </div>
                     );
                   }
