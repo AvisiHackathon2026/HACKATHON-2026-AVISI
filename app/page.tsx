@@ -5,11 +5,12 @@ import { supabase } from "@/lib/supabaseClient";
 import SwipeFeature from "./SwipeFeature";
 import ChatFeature from "./ChatFeature";
 import CalendarFeature from "./CalendarFeature";
+import CompaniesDirectory from "./CompaniesDirectory";
 
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe' | 'chat' | 'calendar'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe' | 'chat' | 'calendar' | 'companies'>('home');
   
   // Auth Form State
   const [email, setEmail] = useState("");
@@ -223,8 +224,11 @@ export default function App() {
         <button onClick={() => setCurrentView('chat')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'chat' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'chat' ? 'bold' : 'normal', borderRadius: '4px' }}>
           💬 Chat
         </button>
-        <button onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
           📅 Calendar
+        </button>
+        <button onClick={() => setCurrentView('companies')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'companies' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'companies' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          🏢 Companies
         </button>
         
         <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px' }}>
@@ -380,6 +384,13 @@ export default function App() {
         {currentView === 'calendar' && (
           <div style={{ width: '100%', height: '100%' }}>
             <CalendarFeature userId={session.user.id} />
+          </div>
+        )}
+
+        {/* VIEW: COMPANIES DIRECTORY */}
+        {currentView === 'companies' && (
+          <div style={{ width: '100%', height: '100%' }}>
+            <CompaniesDirectory />
           </div>
         )}
       </main>
