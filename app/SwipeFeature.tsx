@@ -592,7 +592,7 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
                             flexShrink: 0,
                             display: "flex",
                             alignItems: "center",
-                            justify: "center",
+                            justifyContent: "center",
                             fontSize: "24px",
                           }}
                         >
