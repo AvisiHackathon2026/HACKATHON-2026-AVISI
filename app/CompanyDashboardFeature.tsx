@@ -65,8 +65,7 @@ export default function CompanyDashboardFeature({ userId }: { userId: string }) 
       title: jobTitle,
       description: jobDesc,
       company_id: profile.company_id,
-      hourly_rate: jobRate ? Number(jobRate) : null,
-      created_by: userId
+      hourly_rate: jobRate ? Number(jobRate) : null
     });
 
     if (error) {
