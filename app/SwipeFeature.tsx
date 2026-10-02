@@ -8,9 +8,10 @@ interface SwipeFeatureProps {
   userId: string;
   userEmail: string;
   defaultTab?: "swipe" | "edit_profile";
+  hideTabs?: boolean;
 }
 
-export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe" }: SwipeFeatureProps) {
+export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", hideTabs = false }: SwipeFeatureProps) {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -626,20 +627,22 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe" }
       {/* UNEMPLOYED VIEW: Toggle between Profile Editor & Swipe Cards */}
       {profile?.role === "unemployed" && (
         <div>
-          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-            <button
-              onClick={() => setActiveTab("swipe")}
-              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "swipe" ? "#111827" : "#e5e7eb", color: activeTab === "swipe" ? "#fff" : "#374151", fontWeight: "bold" }}
-            >
-              💼 Swipe Jobs
-            </button>
-            <button
-              onClick={() => setActiveTab("edit_profile")}
-              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "edit_profile" ? "#111827" : "#e5e7eb", color: activeTab === "edit_profile" ? "#fff" : "#374151", fontWeight: "bold" }}
-            >
-              👤 Edit Applicant Profile
-            </button>
-          </div>
+          {!hideTabs && (
+            <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+              <button
+                onClick={() => setActiveTab("swipe")}
+                style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "swipe" ? "#111827" : "#e5e7eb", color: activeTab === "swipe" ? "#fff" : "#374151", fontWeight: "bold" }}
+              >
+                💼 Swipe Jobs
+              </button>
+              <button
+                onClick={() => setActiveTab("edit_profile")}
+                style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "edit_profile" ? "#111827" : "#e5e7eb", color: activeTab === "edit_profile" ? "#fff" : "#374151", fontWeight: "bold" }}
+              >
+                👤 Edit Applicant Profile
+              </button>
+            </div>
+          )}
 
           {activeTab === "edit_profile" ? (
             <form onSubmit={handleSaveProfile} style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "12px", border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "16px" }}>

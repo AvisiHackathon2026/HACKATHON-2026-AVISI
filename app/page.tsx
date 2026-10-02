@@ -228,12 +228,7 @@ export default function App() {
       <nav style={{ width: '250px', background: theme.sidebarBg, borderRight: `1px solid ${theme.borderColor}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
         <h2 style={{ marginTop: 0, marginBottom: '2rem' }}>Recruiter App</h2>
         
-        {/* SHARED: My Profile / Edit Account */}
-        {userRole !== 'admin' && (
-          <button onClick={() => setCurrentView('account')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'account' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'account' ? 'bold' : 'normal', borderRadius: '4px' }}>
-            👤 My Profile
-          </button>
-        )}
+
 
         {/* SHARED: Dashboard */}
         <button onClick={() => setCurrentView('home')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'home' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'home' ? 'bold' : 'normal', borderRadius: '4px' }}>
@@ -272,6 +267,14 @@ export default function App() {
           🏢 Companies
         </button>
         
+        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.9rem', marginBottom: '20px', color: theme.text }}>
+          <input type="checkbox" checked={isDarkMode} onChange={e => {
+            setIsDarkMode(e.target.checked);
+            supabase.auth.updateUser({ data: { dark_mode: e.target.checked } });
+          }} style={{ cursor: 'pointer' }} />
+          Dark Mode
+        </label>
+
         <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px' }}>
           Sign Out
         </button>
@@ -485,14 +488,14 @@ export default function App() {
         {/* VIEW: MY PROFILE */}
         {currentView === 'my_profile' && (
           <div style={{ width: '100%', height: '100%' }}>
-            <SwipeFeature key="profile" userId={session.user.id} userEmail={session.user.email || ""} defaultTab="edit_profile" />
+            <SwipeFeature key="profile" userId={session.user.id} userEmail={session.user.email || ""} defaultTab="edit_profile" hideTabs={true} />
           </div>
         )}
 
         {/* VIEW: SWIPE (NEW) */}
         {currentView === 'swipe' && (
           <div style={{ width: '100%', height: '100%' }}>
-            <SwipeFeature key="swipe" userId={session.user.id} userEmail={session.user.email || ""} defaultTab="swipe" />
+            <SwipeFeature key="swipe" userId={session.user.id} userEmail={session.user.email || ""} defaultTab="swipe" hideTabs={true} />
           </div>
         )}
 
