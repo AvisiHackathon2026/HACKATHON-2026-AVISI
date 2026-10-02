@@ -7,12 +7,13 @@ import ChatFeature from "./ChatFeature";
 import CalendarFeature from "./CalendarFeature";
 import CompaniesDirectory from "./CompaniesDirectory";
 import JobApplicationTracker from "./JobApplicationTracker";
+import JobApplicationsManagement from "./JobApplicationsManagement";
 import CompanyDashboardFeature from "./CompanyDashboardFeature";
 
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'my_profile' | 'swipe' | 'chat' | 'calendar' | 'companies' | 'company_dashboard' | 'applications'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'my_profile' | 'swipe' | 'chat' | 'calendar' | 'companies' | 'company_dashboard' | 'applications' | 'manage_applications'>('home');
   const [negotiationMatchId, setNegotiationMatchId] = useState<string | null>(null);
 
   
@@ -404,34 +405,34 @@ export default function App() {
                 </section>
                 <section style={{ background: 'var(--glass-header-bg)', padding: '1.5rem', border: `1px solid ${'var(--glass-border)'}`, borderRadius: '8px' }}>
                   <h3 style={{ marginTop: 0 }}>Transparent Breakdown</h3>
-                    <p><strong>0. All-in Tarief Opdrachtgever:</strong> €{maxClientRate.toFixed(2)} (Geaccepteerd Budget)</p>
+                    <p><strong>0. All-in Target Rate:</strong> €{maxClientRate.toFixed(2)} (Accepted Budget)</p>
                   <p><strong>1. Gross Weekly Salary:</strong> (€{targetMonthlySalary} × 3) / 13 = €{((targetMonthlySalary * 3) / 13).toFixed(2)} / week</p>
                   <p><strong>2. Gross Hourly Wage:</strong> €{((targetMonthlySalary * 3) / 13).toFixed(2)} / {hoursPerWeek} hours = €{(((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)}</p>
                   <p><strong>3. Cost Price:</strong> €{(((targetMonthlySalary * 3) / 13) / hoursPerWeek).toFixed(2)} × {costFactor} factor = €{((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor).toFixed(2)}</p>
                   <p><strong>4. All-in Cost:</strong> €{((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor).toFixed(2)} + €{travelCostsHourly} travel = €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)}</p>
-                                      <p><strong>5. Final Client Rate:</strong> €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)} + €{desiredMargin} margin = <strong>€{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}</strong></p>
+                                      <p style={{ color: "#dc2626", fontWeight: "bold" }}><strong>5. Final Client Rate:</strong> €{(((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly).toFixed(2)} + €{desiredMargin} margin = <strong>€{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}</strong></p>
                   </section>
                   
                   {/* SCENARIO ANALYSIS */}
                   <section style={{ background: 'var(--glass-bg)', padding: '1.5rem', border: '1px solid var(--glass-border)', borderRadius: '8px', marginTop: '20px' }}>
-                    <h3 style={{ marginTop: 0 }}>Scenario & Afwijking Analysis</h3>
+                    <h3 style={{ marginTop: 0 }}>Scenario & Deviation Analysis</h3>
                     <label style={{ display: 'flex', justifyContent: 'space-between', margin: '10px 0' }}>
-                      Richt Tarief Opdrachtgever (€):
+                      Target Client Rate (€):
                       <input type="number" value={targetClientRate} onChange={(e) => setTargetClientRate(Number(e.target.value))} style={{ background: 'var(--glass-input-bg)', color: 'var(--text-color)', border: '1px solid var(--glass-border)', padding: '4px', width: '120px' }} />
                     </label>
                     <p>
-                      <strong>Berekend All-in Tarief:</strong> €{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}
+                      <strong>Calculated All-in Rate:</strong> €{((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin).toFixed(2)}
                       <span style={{ color: (((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate) > 0 ? '#ef4444' : '#10b981', marginLeft: '10px' }}>
-                        ({(((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate) > 0 ? '+' : ''}{(((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate).toFixed(2)} afwijking)
+                        ({(((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate) > 0 ? '+' : ''}{(((((((targetMonthlySalary * 3) / 13) / hoursPerWeek) * costFactor) + travelCostsHourly) + desiredMargin) - targetClientRate).toFixed(2)} deviation)
                       </span>
                     </p>
                     <div style={{ marginTop: '15px', padding: '10px', background: 'var(--glass-input-bg)', borderRadius: '6px' }}>
-                      <h4 style={{ margin: '0 0 10px 0' }}>Salaris mogelijkheden (op basis van Richt Tarief)</h4>
+                      <h4 style={{ margin: '0 0 10px 0' }}>Salary Options (Based on Target Rate)</h4>
                       <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: '1.6' }}>
-                        <li>Huidige marge (€{desiredMargin}): Max Salaris = <strong>€{((((targetClientRate - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
-                        <li>Nieuwe marge (€15): Max Salaris = <strong>€{((((targetClientRate - 15) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
-                        <li>90% Richt Tarief (€{(targetClientRate * 0.9).toFixed(2)}): Max Salaris = <strong>€{(((((targetClientRate * 0.9) - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
-                        <li>110% Richt Tarief (€{(targetClientRate * 1.1).toFixed(2)}): Max Salaris = <strong>€{(((((targetClientRate * 1.1) - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                        <li>Current margin (€{desiredMargin}): Max Salary = <strong>€{((((targetClientRate - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                        <li>New margin (€15): Max Salary = <strong>€{((((targetClientRate - 15) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                        <li>90% Target Rate (€{(targetClientRate * 0.9).toFixed(2)}): Max Salary = <strong>€{(((((targetClientRate * 0.9) - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
+                        <li>110% Target Rate (€{(targetClientRate * 1.1).toFixed(2)}): Max Salary = <strong>€{(((((targetClientRate * 1.1) - desiredMargin) / costFactor) * hoursPerWeek * 13) / 3).toFixed(2)}</strong></li>
                       </ul>
                     </div>
                   </section>
@@ -462,7 +463,7 @@ export default function App() {
                   <p><strong>1. Target Cost Price:</strong> €{maxClientRate} - €{desiredMargin} margin = €{(maxClientRate - desiredMargin).toFixed(2)} / hour</p>
                   <p><strong>2. Gross Hourly Wage:</strong> €{(maxClientRate - desiredMargin).toFixed(2)} / {costFactor} factor = €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)}</p>
                   <p><strong>3. Gross Weekly Salary:</strong> €{((maxClientRate - desiredMargin) / costFactor).toFixed(2)} / factor × {hoursPerWeek} hours = €{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)}</p>
-                  <p><strong>4. Max Monthly Salary:</strong> (€{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)} × 13) / 3 = <strong>€{((((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek) * 13 / 3).toFixed(2)}</strong></p>
+                  <p style={{ color: "#dc2626", fontWeight: "bold" }}><strong>4. Max Monthly Salary:</strong> (€{(((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek).toFixed(2)} × 13) / 3 = <strong>€{((((maxClientRate - desiredMargin) / costFactor) * hoursPerWeek) * 13 / 3).toFixed(2)}</strong></p>
                 </section>
               </>
             )}
@@ -537,7 +538,14 @@ export default function App() {
           </div>
         )}
 
-                {/* VIEW: JOB APPLICATIONS */}
+                        {/* VIEW: MANAGE APPLICATIONS */}
+        {currentView === 'manage_applications' && (
+          <div style={{ width: '100%', height: '100%', maxWidth: '1000px', margin: '0 auto' }}>
+            <JobApplicationsManagement />
+          </div>
+        )}
+
+        {/* VIEW: JOB APPLICATIONS */}
         {currentView === 'applications' && (
           <div style={{ width: '100%', height: '100%', maxWidth: '800px', margin: '0 auto' }}>
             <JobApplicationTracker userId={session.user.id} />
