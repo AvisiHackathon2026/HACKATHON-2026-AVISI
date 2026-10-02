@@ -113,11 +113,18 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
     const { data: companyList } = await supabase.from("companies").select("*");
     if (companyList) setCompanies(companyList);
 
+  // Recruiter specific state
+  const [recruiterJobs, setRecruiterJobs] = useState<any[]>([]);
+  const [selectedJobContext, setSelectedJobContext] = useState<any>(null);
+
     // Load data based on role
     if (assignedRole === "unemployed") {
       await loadJobsForUnemployed(userProfile.id);
     } else if (assignedRole === "recruiter") {
-      await loadCandidatesForRecruiter(userProfile.id);
+      if (userProfile.company_id) {
+        const { data: jobs } = await supabase.from("jobs").select("*").eq("company_id", userProfile.company_id);
+        if (jobs) setRecruiterJobs(jobs);
+      }
     } else if (assignedRole === "admin") {
       // Admin superpower: Fetch all users (except themselves) to manage them
       const { data: usersList } = await supabase.from("profiles").select("*").neq("id", userProfile.id);
@@ -168,11 +175,12 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
     }
   };
 
-  const loadCandidatesForRecruiter = async (currentUserId: string) => {
+  const loadCandidatesForRecruiter = async (currentUserId: string, jobId: string) => {
     const { data: existingSwipes } = await supabase
       .from("swipes")
       .select("target_id")
-      .eq("swiper_id", currentUserId);
+      .eq("swiper_id", currentUserId)
+      .eq("job_context_id", jobId);
 
     const swipedUserIds = existingSwipes?.map((s) => s.target_id) || [];
 
@@ -408,6 +416,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
       swiper_role: profile.role,
       target_id: targetId,
       direction: direction,
+      job_context_id: profile.role === "recruiter" ? selectedJobContext?.id : null,
     }).then();
 
     if (direction === "right") {
@@ -418,6 +427,7 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
           .eq("target_id", userId)
           .eq("swiper_role", "recruiter")
           .eq("direction", "right")
+          .eq("job_context_id", cardData.id)
           .then(({ data: recruiterSwipes }) => {
             if (recruiterSwipes && recruiterSwipes.length > 0) {
               const recruiterIds = recruiterSwipes.map((s) => s.swiper_id);
@@ -438,31 +448,22 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
             }
           });
       } else if (profile.role === "recruiter") {
-        if (!profile.company_id) return;
+        if (!profile.company_id || !selectedJobContext) return;
 
         supabase
-          .from("jobs")
-          .select("id")
-          .eq("company_id", profile.company_id)
-          .then(({ data: companyJobs }) => {
-            const companyJobIds = companyJobs?.map((j) => j.id) || [];
-            if (companyJobIds.length > 0) {
-              supabase
-                .from("swipes")
-                .select("target_id")
-                .eq("swiper_id", targetId)
-                .eq("swiper_role", "unemployed")
-                .eq("direction", "right")
-                .in("target_id", companyJobIds)
-                .then(({ data: candidateSwipes }) => {
-                  if (candidateSwipes && candidateSwipes.length > 0) {
-                    supabase.from("matches").insert({
-                      unemployed_id: targetId,
-                      recruiter_id: userId,
-                      job_id: candidateSwipes[0].target_id,
-                    }).then(() => setMatchedItem(cardData));
-                  }
-                });
+          .from("swipes")
+          .select("target_id")
+          .eq("swiper_id", targetId)
+          .eq("swiper_role", "unemployed")
+          .eq("direction", "right")
+          .eq("target_id", selectedJobContext.id)
+          .then(({ data: candidateSwipes }) => {
+            if (candidateSwipes && candidateSwipes.length > 0) {
+              supabase.from("matches").insert({
+                unemployed_id: targetId,
+                recruiter_id: userId,
+                job_id: selectedJobContext.id,
+              }).then(() => setMatchedItem(cardData));
             }
           });
       }
@@ -833,45 +834,94 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
       {/* RECRUITER VIEW: Candidate Cards */}
       {profile?.role === "recruiter" && (
         <div style={{ textAlign: "center" }}>
-          
-          <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignItems: "center" }}>
-            <span style={{ fontWeight: "bold", color: "#374151" }}>Filters:</span>
-            <input 
-              type="text" 
-              placeholder="Filter by Location (e.g. London)" 
-              value={filterCity}
-              onChange={(e) => setFilterCity(e.target.value)}
-              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box" }}
-            />
-          </div>
+          {!selectedJobContext ? (
+            <div>
+              <h2 style={{ color: "#111827", marginBottom: "20px" }}>Select a Job to find Candidates</h2>
+              {recruiterJobs.length === 0 ? (
+                <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
+                  You have not posted any jobs yet. Go to your Company Dashboard to create one!
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "15px" }}>
+                  {recruiterJobs.map(job => (
+                    <div 
+                      key={job.id}
+                      onClick={() => {
+                        setSelectedJobContext(job);
+                        loadCandidatesForRecruiter(userId, job.id);
+                      }}
+                      style={{ padding: "20px", backgroundColor: "#fff", borderRadius: "12px", border: "1px solid #e5e7eb", cursor: "pointer", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", textAlign: "left", transition: "transform 0.2s" }}
+                    >
+                      <h3 style={{ margin: "0 0 10px 0", color: "#111827" }}>{job.title}</h3>
+                      <p style={{ margin: 0, color: "#6b7280", fontSize: "14px", textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>{job.description}</p>
+                      <div style={{ marginTop: "15px", color: "#3b82f6", fontWeight: "bold" }}>👉 Find Candidates</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <button 
+                  onClick={() => {
+                    setSelectedJobContext(null);
+                    setCandidateCards([]);
+                  }} 
+                  style={{ padding: "8px 16px", backgroundColor: "#e5e7eb", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
+                >
+                  🔙 Back to Jobs
+                </button>
+                <h3 style={{ margin: 0 }}>Hiring for: <span style={{ color: "#3b82f6" }}>{selectedJobContext.title}</span></h3>
+              </div>
 
-          <div style={{ position: "relative", width: "100%", height: "480px", marginTop: "20px" }}>
-            {(() => {
-              const filteredCandidates = filterCity 
-                ? candidateCards.filter(c => c.home_city?.toLowerCase().includes(filterCity.toLowerCase())) 
-                : candidateCards;
+              <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignItems: "center" }}>
+                <span style={{ fontWeight: "bold", color: "#374151" }}>Filters:</span>
+                <input 
+                  type="text" 
+                  placeholder="Filter by Location (e.g. London)" 
+                  value={filterCity}
+                  onChange={(e) => setFilterCity(e.target.value)}
+                  style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                />
+              </div>
 
-              if (candidateCards.length === 0) {
-                return (
-                  <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
-                    You have viewed all available candidates. Check back later!
-                  </div>
-                );
-              }
+              <div style={{ position: "relative", width: "100%", height: "480px", marginTop: "20px" }}>
+                {(() => {
+                  const filteredCandidates = filterCity 
+                    ? candidateCards.filter(c => c.home_city?.toLowerCase().includes(filterCity.toLowerCase())) 
+                    : candidateCards;
 
-              if (filteredCandidates.length === 0) {
-                return (
-                  <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
-                    No candidates match your current location filter.
-                  </div>
-                );
-              }
-              
-              return filteredCandidates.map((candidate) => (
-                  <TinderCard
-                    key={candidate.id}
-                    onSwipe={(dir) => handleSwipe(dir, candidate.id, candidate)}
-                    preventSwipe={["up", "down"]}
+                  if (candidateCards.length === 0) {
+                    return (
+                      <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc", display: "flex", flexDirection: "column", alignItems: "center", gap: "15px" }}>
+                        <div style={{ fontSize: "16px", fontWeight: "bold" }}>You have viewed all available candidates.</div>
+                        <button 
+                          onClick={async () => {
+                            await supabase.from("swipes").delete().eq("swiper_id", userId).eq("job_context_id", selectedJobContext.id).eq("direction", "left");
+                            await loadCandidatesForRecruiter(userId, selectedJobContext.id);
+                          }}
+                          style={{ padding: "10px 20px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                        >
+                          🔁 Refresh Candidate Pool
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  if (filteredCandidates.length === 0) {
+                    return (
+                      <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
+                        No candidates match your current location filter.
+                      </div>
+                    );
+                  }
+                  
+                  return filteredCandidates.map((candidate) => (
+                      <TinderCard
+                        key={candidate.id}
+                        onSwipe={(dir) => handleSwipe(dir, candidate.id, candidate)}
+                        preventSwipe={["up", "down"]}
                     className="absolute-card"
                   >
                     <div
