@@ -35,6 +35,10 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
   
   // Recruiter Swipe Filter State
   const [filterCity, setFilterCity] = useState("");
+  
+  // Recruiter specific state
+  const [recruiterJobs, setRecruiterJobs] = useState<any[]>([]);
+  const [selectedJobContext, setSelectedJobContext] = useState<any>(null);
 
   // Swipe Cards Data
   const [jobCards, setJobCards] = useState<any[]>([]);
@@ -112,10 +116,6 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
     // Fetch companies list (used by both Admin and Recruiter systems)
     const { data: companyList } = await supabase.from("companies").select("*");
     if (companyList) setCompanies(companyList);
-
-  // Recruiter specific state
-  const [recruiterJobs, setRecruiterJobs] = useState<any[]>([]);
-  const [selectedJobContext, setSelectedJobContext] = useState<any>(null);
 
     // Load data based on role
     if (assignedRole === "unemployed") {
@@ -1041,6 +1041,8 @@ export default function SwipeFeature({ userId, userEmail, defaultTab = "swipe", 
                 ));
             })()}
           </div>
+        </div>
+        )}
         </div>
       )}
 
