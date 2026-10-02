@@ -298,7 +298,7 @@ export default function App() {
                     📄 My Profile
                   </button>
                   <button className="glass-card glass-button" onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', border: `1px solid rgba(255,255,255,0.1)`, borderRadius: '8px' }}>
-                    🔥 Find Matches
+                    🔥 Swipe Deck
                   </button>
                 </>
               )}
