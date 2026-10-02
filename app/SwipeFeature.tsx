@@ -232,6 +232,10 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   const handleCompleteOnboarding = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !fullName.trim()) return;
+    if (Number(expectedSalary) > 999) {
+      alert("Expected salary cannot exceed 999");
+      return;
+    }
 
     const { error } = await supabase
       .from("profiles")
@@ -261,6 +265,10 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   // Unemployed Profile Save Handler (Existing Users)
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (Number(expectedSalary) > 999) {
+      alert("Expected salary cannot exceed 999");
+      return;
+    }
     setSaveStatus("Saving...");
 
     // NOTE: username is purposely excluded here because they can't change it anymore.
@@ -394,6 +402,58 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     }
   };
 
+  // RECRUITER SUPERPOWER: Direct Message Bypass
+  const handleDirectMessage = async (candidateId: string) => {
+    if (!profile.company_id) {
+      alert("You need to be assigned to a company to message candidates.");
+      return;
+    }
+
+    // Check if they already matched
+    const { data: existingMatch } = await supabase
+      .from("matches")
+      .select("id")
+      .eq("unemployed_id", candidateId)
+      .eq("recruiter_id", userId)
+      .limit(1);
+
+    if (existingMatch && existingMatch.length > 0) {
+      alert("You already matched! Open your Chat tab to message them.");
+      return;
+    }
+
+    // Get the first job belonging to the recruiter's company to fulfill the foreign key constraint
+    const { data: companyJobs } = await supabase
+      .from("jobs")
+      .select("id")
+      .eq("company_id", profile.company_id)
+      .limit(1);
+
+    if (!companyJobs || companyJobs.length === 0) {
+      alert("Your company needs to post at least 1 job before you can start messaging candidates.");
+      return;
+    }
+
+    const firstJobId = companyJobs[0].id;
+
+    // Insert a forced match
+    const { error } = await supabase.from("matches").insert({
+      unemployed_id: candidateId,
+      recruiter_id: userId,
+      job_id: firstJobId,
+    });
+
+    if (error) {
+      if (error.message.includes("duplicate key")) {
+        alert("You already have an open chat with this candidate.");
+      } else {
+        alert(`Error starting chat: ${error.message}`);
+      }
+    } else {
+      alert("Direct Message thread opened! Go to your Chat tab to start talking.");
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "40px", fontFamily: "sans-serif" }}>
@@ -453,8 +513,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
           <div>
             <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Expected Salary / Hour</label>
             <input
-              type="text"
-              placeholder="€25 / hr"
+              type="number"
+              max="999"
+              placeholder="e.g. 25"
               value={expectedSalary}
               onChange={(e) => setExpectedSalary(e.target.value)}
               style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
@@ -558,8 +619,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
               <div>
                 <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Expected Salary / Hour</label>
                 <input
-                  type="text"
-                  placeholder="€25 / hr"
+                  type="number"
+                  max="999"
+                  placeholder="e.g. 25"
                   value={expectedSalary}
                   onChange={(e) => setExpectedSalary(e.target.value)}
                   style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
@@ -760,8 +822,19 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
                       )}
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#9ca3af", fontSize: "12px", borderTop: "1px solid #f3f4f6", paddingTop: "12px", alignItems: "center" }}>
                       <span>👈 Swipe Left to Pass</span>
+                      
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDirectMessage(candidate.id);
+                        }}
+                        style={{ padding: "6px 12px", backgroundColor: "#3b82f6", color: "#fff", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "bold" }}
+                      >
+                        💬 Direct Message
+                      </button>
+
                       <span>Swipe Right to Connect 👉</span>
                     </div>
                   </div>
