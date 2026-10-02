@@ -24,6 +24,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   const [motivation, setMotivation] = useState("");
   const [profilePicUrl, setProfilePicUrl] = useState("");
   const [cvUrl, setCvUrl] = useState("");
+  const [skills, setSkills] = useState("");
+  const [education, setEducation] = useState("");
+  const [experience, setExperience] = useState("");
   const [uploadingPic, setUploadingPic] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
@@ -96,6 +99,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       setMotivation(userProfile.motivation || "");
       setProfilePicUrl(userProfile.profile_picture_url || "");
       setCvUrl(userProfile.cv_url || "");
+      setSkills(userProfile.skills || "");
+      setEducation(userProfile.education || "");
+      setExperience(userProfile.experience || "");
     }
 
     // Fetch companies list (used by both Admin and Recruiter systems)
@@ -319,6 +325,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
         motivation: motivation,
         profile_picture_url: profilePicUrl,
         cv_url: cvUrl,
+        skills: skills,
+        education: education,
+        experience: experience,
       })
       .eq("id", userId);
 
@@ -695,6 +704,39 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
               </div>
 
               <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Skills (Comma Separated)</label>
+                <input
+                  type="text"
+                  placeholder="React, Next.js, Node, Design"
+                  value={skills}
+                  onChange={(e) => setSkills(e.target.value)}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Education / Schooling</label>
+                <input
+                  type="text"
+                  placeholder="BSc Computer Science, MIT"
+                  value={education}
+                  onChange={(e) => setEducation(e.target.value)}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Work Experience</label>
+                <textarea
+                  placeholder="Describe your previous work experience..."
+                  value={experience}
+                  onChange={(e) => setExperience(e.target.value)}
+                  rows={4}
+                  style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }}
+                />
+              </div>
+
+              <div>
                 <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Profile Picture</label>
                 {profilePicUrl && (
                   <img src={profilePicUrl} alt="Profile Preview" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", marginBottom: "8px" }} />
@@ -894,10 +936,30 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
                         </div>
 
                         {/* Motivation */}
-                        <div style={{ marginBottom: "12px" }}>
+                        <div style={{ marginBottom: "8px" }}>
                           <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151", display: "block" }}>Motivation:</span>
-                          <p style={{ margin: "4px 0", color: "#4b5563", fontSize: "13px", lineHeight: "1.4", maxHeight: "110px", overflow: "hidden" }}>
+                          <p style={{ margin: "2px 0", color: "#4b5563", fontSize: "13px", lineHeight: "1.4", maxHeight: "60px", overflow: "hidden" }}>
                             "{candidate.motivation || "No motivation statement provided."}"
+                          </p>
+                        </div>
+
+                        {/* Skills */}
+                        <div style={{ marginBottom: "8px" }}>
+                          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151" }}>Skills: </span>
+                          <span style={{ fontSize: "13px", color: "#4b5563" }}>{candidate.skills || "None listed"}</span>
+                        </div>
+
+                        {/* Education */}
+                        <div style={{ marginBottom: "8px" }}>
+                          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151" }}>Education: </span>
+                          <span style={{ fontSize: "13px", color: "#4b5563" }}>{candidate.education || "None listed"}</span>
+                        </div>
+
+                        {/* Experience */}
+                        <div style={{ marginBottom: "12px" }}>
+                          <span style={{ fontSize: "13px", fontWeight: "bold", color: "#374151", display: "block" }}>Experience:</span>
+                          <p style={{ margin: "2px 0", color: "#4b5563", fontSize: "12px", lineHeight: "1.4", maxHeight: "40px", overflow: "hidden" }}>
+                            {candidate.experience || "None listed"}
                           </p>
                         </div>
 
