@@ -30,6 +30,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   const [uploadingPic, setUploadingPic] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
+  
+  // Recruiter Swipe Filter State
+  const [filterCity, setFilterCity] = useState("");
 
   // Swipe Cards Data
   const [jobCards, setJobCards] = useState<any[]>([]);
@@ -827,53 +830,32 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       {profile?.role === "recruiter" && (
         <div style={{ textAlign: "center" }}>
           
-          <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-            <button
-              onClick={() => setActiveTab("swipe")}
-              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "swipe" ? "#111827" : "#e5e7eb", color: activeTab === "swipe" ? "#fff" : "#374151", fontWeight: "bold" }}
-            >
-              👥 Swipe Applicants
-            </button>
-            <button
-              onClick={() => setActiveTab("edit_profile")}
-              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "none", cursor: "pointer", backgroundColor: activeTab === "edit_profile" ? "#111827" : "#e5e7eb", color: activeTab === "edit_profile" ? "#fff" : "#374151", fontWeight: "bold" }}
-            >
-              ➕ Post a Job
-            </button>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignItems: "center" }}>
+            <span style={{ fontWeight: "bold", color: "#374151" }}>Filters:</span>
+            <input 
+              type="text" 
+              placeholder="Filter by Location (e.g. London)" 
+              value={filterCity}
+              onChange={(e) => setFilterCity(e.target.value)}
+              style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box" }}
+            />
           </div>
 
-          {activeTab === "edit_profile" ? (
-             <form onSubmit={handleCreateJob} style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "12px", border: "1px solid #e5e7eb", display: "flex", flexDirection: "column", gap: "16px", textAlign: "left" }}>
-              <h2 style={{ margin: 0 }}>Create a New Job Listing</h2>
-              {!profile.company_id && <p style={{ color: "#ef4444", fontWeight: "bold" }}>Error: You must be assigned to a company by an Admin before posting jobs.</p>}
+          <div style={{ position: "relative", width: "100%", height: "480px", marginTop: "20px" }}>
+            {(() => {
+              const filteredCandidates = filterCity 
+                ? candidateCards.filter(c => c.home_city?.toLowerCase().includes(filterCity.toLowerCase())) 
+                : candidateCards;
+
+              if (filteredCandidates.length === 0) {
+                return (
+                  <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
+                    No candidates match your current filters.
+                  </div>
+                );
+              }
               
-              <div>
-                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Job Title</label>
-                <input type="text" placeholder="e.g. Senior React Developer" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }} required disabled={!profile.company_id} />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Hourly Rate</label>
-                <input type="number" max="999" placeholder="e.g. 50" value={jobRate} onChange={(e) => setJobRate(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }} disabled={!profile.company_id} />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontWeight: "bold", marginBottom: "4px" }}>Job Description</label>
-                <textarea placeholder="Describe the role and requirements..." value={jobDesc} onChange={(e) => setJobDesc(e.target.value)} rows={4} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", boxSizing: "border-box", color: "#111", backgroundColor: "#fff" }} required disabled={!profile.company_id} />
-              </div>
-
-              <button type="submit" style={{ padding: "12px", backgroundColor: "#10b981", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", cursor: profile.company_id ? "pointer" : "not-allowed", opacity: profile.company_id ? 1 : 0.5 }}>
-                Post Job Opening
-              </button>
-            </form>
-          ) : (
-            <div style={{ position: "relative", width: "100%", height: "480px", marginTop: "20px" }}>
-              {candidateCards.length === 0 ? (
-                <div style={{ padding: "40px", backgroundColor: "#f9fafb", borderRadius: "12px", border: "1px dashed #ccc" }}>
-                  No candidate cards available to swipe right now.
-                </div>
-              ) : (
-                candidateCards.map((candidate) => (
+              return filteredCandidates.map((candidate) => (
                   <TinderCard
                     key={candidate.id}
                     onSwipe={(dir) => handleSwipe(dir, candidate.id, candidate)}
@@ -994,10 +976,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
                       </div>
                     </div>
                   </TinderCard>
-                ))
-              )}
-            </div>
-          )}
+                ));
+            })()}
+          </div>
         </div>
       )}
 

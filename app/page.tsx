@@ -6,11 +6,12 @@ import SwipeFeature from "./SwipeFeature";
 import ChatFeature from "./ChatFeature";
 import CalendarFeature from "./CalendarFeature";
 import CompaniesDirectory from "./CompaniesDirectory";
+import CompanyDashboardFeature from "./CompanyDashboardFeature";
 
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe' | 'chat' | 'calendar' | 'companies'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe' | 'chat' | 'calendar' | 'companies' | 'company_dashboard'>('home');
   const [negotiationMatchId, setNegotiationMatchId] = useState<string | null>(null);
 
   
@@ -315,9 +316,14 @@ export default function App() {
               
               {/* RECRUITER ONLY */}
               {userRole === 'recruiter' && (
-                <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
-                  🔥 Swipe Deck
-                </button>
+                <>
+                  <button onClick={() => setCurrentView('company_dashboard')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                    🏢 Company Dashboard
+                  </button>
+                  <button onClick={() => setCurrentView('swipe')} style={{ padding: '2rem', fontSize: '1.2rem', cursor: 'pointer', background: theme.cardBg, color: theme.text, border: `1px solid ${theme.borderColor}`, borderRadius: '8px' }}>
+                    🔥 Swipe Deck
+                  </button>
+                </>
               )}
 
               {/* ADMIN ONLY */}
@@ -555,6 +561,13 @@ export default function App() {
         {currentView === 'companies' && (
           <div style={{ width: '100%', height: '100%' }}>
             <CompaniesDirectory />
+          </div>
+        )}
+
+        {/* VIEW: COMPANY DASHBOARD (RECRUITER) */}
+        {currentView === 'company_dashboard' && (
+          <div style={{ width: '100%', height: '100%' }}>
+            <CompanyDashboardFeature userId={session.user.id} />
           </div>
         )}
       </main>
