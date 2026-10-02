@@ -28,7 +28,7 @@ export default function ChatFeature({ userId, onGoToCalculator }: ChatFeaturePro
   }, [userId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
   }, [messages]);
 
   useEffect(() => {

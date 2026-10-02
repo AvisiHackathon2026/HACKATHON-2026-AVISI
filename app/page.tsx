@@ -205,8 +205,6 @@ export default function App() {
   if (!session) {
     return (
       <main className="grid-background" style={{ position: 'relative', overflow: 'hidden', padding: '2rem', fontFamily: 'sans-serif', color: theme.text, minHeight: '100vh' }}>
-        <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "40%", height: "40%", background: "rgba(37, 99, 235, 0.2)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
-        <div style={{ position: "absolute", bottom: "-10%", right: "-10%", width: "40%", height: "40%", background: "rgba(30, 58, 138, 0.2)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
         
         <div style={{ position: 'relative', zIndex: 10 }}>
           <h1 className="text-gradient" style={{ fontSize: '3rem', fontWeight: '800' }}>Vanguard Engine</h1>
@@ -228,8 +226,6 @@ export default function App() {
   // --- UI: LOGGED IN (APP LAYOUT) ---
   return (
     <div className="grid-background" style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', color: theme.text, position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: "absolute", top: "-10%", left: "-10%", width: "40%", height: "40%", background: "rgba(37, 99, 235, 0.1)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
-      <div style={{ position: "absolute", bottom: "-10%", right: "-10%", width: "40%", height: "40%", background: "rgba(30, 58, 138, 0.1)", filter: "blur(120px)", borderRadius: "50%", pointerEvents: "none", zIndex: 0 }} />
       
       {/* SIDEBAR */}
       <nav className="glass-card" style={{ position: 'relative', zIndex: 10, width: '250px', borderRight: `1px solid ${theme.borderColor}`, padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
