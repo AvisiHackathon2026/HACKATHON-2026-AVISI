@@ -3,11 +3,13 @@
 import { useState, useEffect, type FormEvent, type ChangeEvent } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import SwipeFeature from "./SwipeFeature";
+import ChatFeature from "./ChatFeature";
+import CalendarFeature from "./CalendarFeature";
 
 export default function App() {
   // --- AUTHENTICATION & ROUTING STATE ---
   const [session, setSession] = useState<any>(null);
-  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'calculator' | 'account' | 'cv' | 'swipe' | 'chat' | 'calendar'>('home');
   
   // Auth Form State
   const [email, setEmail] = useState("");
@@ -215,8 +217,14 @@ export default function App() {
         <button onClick={() => setCurrentView('cv')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'cv' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'cv' ? 'bold' : 'normal', borderRadius: '4px' }}>
           📄 Upload CV
         </button>
-        <button onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
+        <button onClick={() => setCurrentView('swipe')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'swipe' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'swipe' ? 'bold' : 'normal', borderRadius: '4px' }}>
           🔥 Find Matches
+        </button>
+        <button onClick={() => setCurrentView('chat')} style={{ padding: '10px', marginBottom: '10px', textAlign: 'left', cursor: 'pointer', background: currentView === 'chat' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'chat' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          💬 Chat
+        </button>
+        <button onClick={() => setCurrentView('calendar')} style={{ padding: '10px', marginBottom: 'auto', textAlign: 'left', cursor: 'pointer', background: currentView === 'calendar' ? theme.borderColor : 'transparent', color: theme.text, border: 'none', fontWeight: currentView === 'calendar' ? 'bold' : 'normal', borderRadius: '4px' }}>
+          📅 Calendar
         </button>
         
         <button onClick={handleSignOut} style={{ padding: '10px', cursor: 'pointer', background: '#d32f2f', color: '#fff', border: 'none', borderRadius: '4px' }}>
@@ -358,6 +366,20 @@ export default function App() {
         {currentView === 'swipe' && (
           <div style={{ width: '100%', height: '100%' }}>
             <SwipeFeature userId={session.user.id} />
+          </div>
+        )}
+
+        {/* VIEW: CHAT (NEW) */}
+        {currentView === 'chat' && (
+          <div style={{ width: '100%', height: '100%' }}>
+            <ChatFeature userId={session.user.id} />
+          </div>
+        )}
+
+        {/* VIEW: CALENDAR (NEW) */}
+        {currentView === 'calendar' && (
+          <div style={{ width: '100%', height: '100%' }}>
+            <CalendarFeature userId={session.user.id} />
           </div>
         )}
       </main>
