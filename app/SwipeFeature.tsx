@@ -44,7 +44,8 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
   // Admin User Management State
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<any[]>([]);
-  
+  const [allJobs, setAllJobs] = useState<any[]>([]);
+
   // Admin Edit Override State
   const [adminEditUser, setAdminEditUser] = useState<any>(null);
   const [adminEditUsername, setAdminEditUsername] = useState("");
@@ -110,6 +111,9 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
       // Admin superpower: Fetch all users (except themselves) to manage them
       const { data: usersList } = await supabase.from("profiles").select("*").neq("id", userProfile.id);
       if (usersList) setAllUsers(usersList);
+
+      const { data: jobsList } = await supabase.from("jobs").select("*, companies(name)");
+      if (jobsList) setAllJobs(jobsList);
     }
 
     setLoading(false);
@@ -366,75 +370,87 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
     alert("Job opening posted!");
   };
 
-  // Swipe logic
-  const handleSwipe = async (
+  // Admin Action: Delete Job
+  const handleDeleteJob = async (jobId: string) => {
+    const confirm = window.confirm("Are you sure you want to delete this job posting? This cannot be undone.");
+    if (!confirm) return;
+    
+    await supabase.from("jobs").delete().eq("id", jobId);
+    alert("Job successfully deleted!");
+    fetchProfileAndData(); // Refresh list
+  };
+
+  // Swipe logic (Optimistic / Non-blocking)
+  const handleSwipe = (
     direction: string,
     targetId: string,
     cardData: any
   ) => {
     if (direction !== "left" && direction !== "right") return;
 
-    await supabase.from("swipes").insert({
+    // Fire and forget the swipe insert
+    supabase.from("swipes").insert({
       swiper_id: userId,
       swiper_role: profile.role,
       target_id: targetId,
       direction: direction,
-    });
+    }).then();
 
     if (direction === "right") {
       if (profile.role === "unemployed") {
-        const { data: recruiterSwipes } = await supabase
+        supabase
           .from("swipes")
           .select("swiper_id")
           .eq("target_id", userId)
           .eq("swiper_role", "recruiter")
-          .eq("direction", "right");
-
-        if (recruiterSwipes && recruiterSwipes.length > 0) {
-          const recruiterIds = recruiterSwipes.map((s) => s.swiper_id);
-          const { data: matchingRecruiters } = await supabase
-            .from("profiles")
-            .select("id")
-            .in("id", recruiterIds)
-            .eq("company_id", cardData.company_id);
-
-          if (matchingRecruiters && matchingRecruiters.length > 0) {
-            await supabase.from("matches").insert({
-              unemployed_id: userId,
-              recruiter_id: matchingRecruiters[0].id,
-              job_id: cardData.id,
-            });
-            setMatchedItem(cardData);
-          }
-        }
+          .eq("direction", "right")
+          .then(({ data: recruiterSwipes }) => {
+            if (recruiterSwipes && recruiterSwipes.length > 0) {
+              const recruiterIds = recruiterSwipes.map((s) => s.swiper_id);
+              supabase
+                .from("profiles")
+                .select("id")
+                .in("id", recruiterIds)
+                .eq("company_id", cardData.company_id)
+                .then(({ data: matchingRecruiters }) => {
+                  if (matchingRecruiters && matchingRecruiters.length > 0) {
+                    supabase.from("matches").insert({
+                      unemployed_id: userId,
+                      recruiter_id: matchingRecruiters[0].id,
+                      job_id: cardData.id,
+                    }).then(() => setMatchedItem(cardData));
+                  }
+                });
+            }
+          });
       } else if (profile.role === "recruiter") {
         if (!profile.company_id) return;
 
-        const { data: companyJobs } = await supabase
+        supabase
           .from("jobs")
           .select("id")
-          .eq("company_id", profile.company_id);
-
-        const companyJobIds = companyJobs?.map((j) => j.id) || [];
-
-        if (companyJobIds.length > 0) {
-          const { data: candidateSwipes } = await supabase
-            .from("swipes")
-            .select("target_id")
-            .eq("swiper_id", targetId)
-            .eq("swiper_role", "unemployed")
-            .eq("direction", "right")
-            .in("target_id", companyJobIds);
-
-          if (candidateSwipes && candidateSwipes.length > 0) {
-            await supabase.from("matches").insert({
-              unemployed_id: targetId,
-              recruiter_id: userId,
-              job_id: candidateSwipes[0].target_id,
-            });
-            setMatchedItem(cardData);
-          }
-        }
+          .eq("company_id", profile.company_id)
+          .then(({ data: companyJobs }) => {
+            const companyJobIds = companyJobs?.map((j) => j.id) || [];
+            if (companyJobIds.length > 0) {
+              supabase
+                .from("swipes")
+                .select("target_id")
+                .eq("swiper_id", targetId)
+                .eq("swiper_role", "unemployed")
+                .eq("direction", "right")
+                .in("target_id", companyJobIds)
+                .then(({ data: candidateSwipes }) => {
+                  if (candidateSwipes && candidateSwipes.length > 0) {
+                    supabase.from("matches").insert({
+                      unemployed_id: targetId,
+                      recruiter_id: userId,
+                      job_id: candidateSwipes[0].target_id,
+                    }).then(() => setMatchedItem(cardData));
+                  }
+                });
+            }
+          });
       }
     }
   };
@@ -996,6 +1012,30 @@ export default function SwipeFeature({ userId, userEmail }: SwipeFeatureProps) {
 
                     </div>
                   </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Admin: Manage Jobs */}
+          <div style={{ padding: "16px", border: "1px solid #e5e7eb", borderRadius: "8px", backgroundColor: "#fff", color: "#111" }}>
+            <h3 style={{ marginTop: 0 }}>Admin: Manage Job Postings</h3>
+            <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #eee", borderRadius: "4px" }}>
+              {allJobs.length === 0 && <div style={{ padding: "10px" }}>No job postings found.</div>}
+              {allJobs.map(job => (
+                <div key={job.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", borderBottom: "1px solid #eee" }}>
+                  <div>
+                    <strong>{job.title}</strong>
+                    <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+                      Company: {job.companies?.name || "Unknown"} | Rate: €{job.hourly_rate}/hr
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleDeleteJob(job.id)}
+                    style={{ padding: "6px 12px", backgroundColor: "#ef4444", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "12px" }}
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
               ))}
             </div>
           </div>
